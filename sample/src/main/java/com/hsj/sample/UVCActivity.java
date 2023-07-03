@@ -1,6 +1,7 @@
 package com.hsj.sample;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
@@ -56,8 +57,10 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     private IRender render;
     private Surface surface;
     private LinearLayout ll;
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     DebugTool debugTool;
+    private int[][] supportFrameSize;
+    static int curFrameSizeIndex;
+    static int[] curFrameSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,15 +175,15 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         if (this.camera == null) {
             CameraAPI camera = new CameraAPI();
             boolean ret = camera.create(pid, vid);
-            int[][] supportFrameSize = camera.getSupportFrameSize();
+            supportFrameSize = camera.getSupportFrameSize();
             if (supportFrameSize == null || supportFrameSize.length == 0) {
                 showToast("Get support preview size failed.");
             } else {
-                final int index = supportFrameSize.length / 2;
-                final int width = supportFrameSize[index][0];
-                final int height = supportFrameSize[index][1];
+                curFrameSize = supportFrameSize[curFrameSizeIndex];
+                final int width = curFrameSize[0];
+                final int height = curFrameSize[1];
                 Log.i(TAG, "width=" + width + ", height=" + height);
-                if (ret) ret = camera.setFrameSize(640, 480, CameraAPI.FRAME_FORMAT_MJPEG);
+                if (ret) ret = camera.setFrameSize(width, height, CameraAPI.FRAME_FORMAT_MJPEG);
                 if (ret) this.camera = camera;
             }
         } else {
@@ -203,7 +206,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         @Override
         public void onFrame(ByteBuffer data) {
             Log.i(TAG, "onFrame: ");
-            debugTool.onDataCallback(data, 0, 640, 480);
+            debugTool.onDataCallback(data, 0, curFrameSize[0], curFrameSize[1]);
         }
     };
 
@@ -253,31 +256,50 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     }
 
     private void showSingleChoiceDialog() {
-        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        Collection<UsbDevice> values = usbManager.getDeviceList().values();
-        final UsbDevice[] devices = values.toArray(new UsbDevice[]{});
-        int size = devices.length;
-        if (size == 0) {
-            showToast("No Usb device to be found");
-        } else {
-            // stop and destroy
-            stop();
-            destroy();
-            this.ll.setVisibility(View.GONE);
-            // get Usb devices name
-            String[] items = new String[size];
-            for (int i = 0; i < size; ++i) {
-                items[i] = "Device: " + devices[i].getProductName();
+//        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+//        Collection<UsbDevice> values = usbManager.getDeviceList().values();
+//        final UsbDevice[] devices = values.toArray(new UsbDevice[]{});
+//        int size = devices.length;
+//        if (size == 0) {
+//            showToast("No Usb device to be found");
+//        } else {
+//            // stop and destroy
+//            stop();
+//            destroy();
+//            this.ll.setVisibility(View.GONE);
+//            // get Usb devices name
+//            String[] items = new String[size];
+//            for (int i = 0; i < size; ++i) {
+//                items[i] = "Device: " + devices[i].getProductName();
+//            }
+//            // dialog
+//            if (index >= size) index = 0;
+//            AlertDialog.Builder ad = new AlertDialog.Builder(this);
+//            ad.setTitle(R.string.select_usb_device);
+//            ad.setSingleChoiceItems(items, index, (dialog, which) -> index = which);
+//            ad.setPositiveButton(R.string.btn_confirm, (dialog, which) -> {
+//                this.pid = devices[index].getProductId();
+//                this.vid = devices[index].getVendorId();
+//                this.ll.setVisibility(View.VISIBLE);
+//            });
+//            ad.show();
+//        }
+        if (supportFrameSize != null) {
+            String[] items = new String[supportFrameSize.length];
+            for (int i = 0; i < supportFrameSize.length; ++i) {
+                items[i] = "" + supportFrameSize[i][0] + " x " + supportFrameSize[i][1];
             }
-            // dialog
-            if (index >= size) index = 0;
             AlertDialog.Builder ad = new AlertDialog.Builder(this);
             ad.setTitle(R.string.select_usb_device);
-            ad.setSingleChoiceItems(items, index, (dialog, which) -> index = which);
+            ad.setSingleChoiceItems(items, curFrameSizeIndex, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    curFrameSizeIndex = which;
+                }
+            });
             ad.setPositiveButton(R.string.btn_confirm, (dialog, which) -> {
-                this.pid = devices[index].getProductId();
-                this.vid = devices[index].getVendorId();
-                this.ll.setVisibility(View.VISIBLE);
+                finish();
+                setResult(100);
             });
             ad.show();
         }
