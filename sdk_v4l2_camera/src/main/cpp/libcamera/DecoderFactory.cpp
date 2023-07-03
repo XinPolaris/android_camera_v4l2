@@ -92,7 +92,7 @@ public:
         } else if (out_buffer_id == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) {
             LOGW(TAG, "Hardware: media info output format changed");
             AMediaFormat *format = AMediaCodec_getOutputFormat(mediaCodec);
-            LOGD(TAG, "AMediaFormat: %s", AMediaFormat_toString(format));
+            LOGI(TAG, "AMediaFormat: %s", AMediaFormat_toString(format));
             AMediaFormat_delete(format);
         } else if (out_buffer_id == AMEDIACODEC_INFO_TRY_AGAIN_LATER) {
             LOGW(TAG, "Hardware: media info try again later");
@@ -139,7 +139,7 @@ public:
         //2 alloc yuv422 out buffer memory: subSample = TJSAMP_422
         size_t out_buffer_size = tjBufSizeYUV2(width, 4, height, TJSAMP_422);
         out_buffer = tjAlloc(out_buffer_size);
-        LOGD(TAG, "DecoderSw: create success");
+        LOGI(TAG, "DecoderSw: create success");
         return 0;
     }
 
@@ -188,13 +188,13 @@ int DecoderFactory::init(uint16_t frameW, uint16_t frameH) {
         decoder = new DecoderHw();
         if (0 == decoder->init(frameW, frameH)) {
             type = DECODE_HW;
-            LOGD(TAG, "decode by Hardware");
+            LOGI(TAG, "decode by Hardware");
         } else {
             SAFE_DELETE(decoder)
             decoder = new DecoderSw();
             ret = decoder->init(frameW, frameH);
             type = DECODE_SW;
-            LOGD(TAG, "decode by Software");
+            LOGI(TAG, "decode by Software");
         }
     }
     return ret;

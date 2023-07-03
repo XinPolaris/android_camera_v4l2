@@ -20,6 +20,7 @@ public final class CameraView extends GLSurfaceView implements GLSurfaceView.Ren
     public static final int BEAUTY = 1;
     public static final int DEPTH = 2;
     private IRender render;
+    public SurfaceCallback surfaceCallback;
 
     public CameraView(Context context) {
         this(context, null);
@@ -58,6 +59,9 @@ public final class CameraView extends GLSurfaceView implements GLSurfaceView.Ren
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         if (render != null) render.onSurfaceCreated(gl, config);
+        if (surfaceCallback != null) {
+            surfaceCallback.onSurfaceCreated(gl, config);
+        }
     }
 
     @Override
@@ -68,5 +72,9 @@ public final class CameraView extends GLSurfaceView implements GLSurfaceView.Ren
     @Override
     public void onDrawFrame(GL10 gl) {
         if (render != null) render.onDrawFrame(gl);
+    }
+
+    public interface SurfaceCallback {
+        void onSurfaceCreated(GL10 gl, EGLConfig config);
     }
 }

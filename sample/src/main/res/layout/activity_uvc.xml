@@ -3,14 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:keepScreenOn="true"
+    tools:context=".UVCActivity">
 
     <com.hsj.camera.CameraView
         android:id="@+id/cameraView"
-        android:layout_width="320dp"
-        android:layout_height="512dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="640dp"
+        android:layout_height="480dp"
+        android:layout_margin="10dp"
         android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="结束测试" />
+
 
     <LinearLayout
         android:id="@+id/ll"
@@ -60,5 +68,14 @@
             android:textAllCaps="false" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/debugInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_margin="20dp"
+        tools:text="fps: 30"
+        android:textColor="#00FF00" />
 
 </RelativeLayout>

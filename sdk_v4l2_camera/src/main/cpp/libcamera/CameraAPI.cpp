@@ -126,20 +126,21 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
         tv.tv_usec = 0;
         FD_ZERO (&fds);
         FD_SET (camera->fd, &fds);
-        if (0 >= select(fd_count, &fds, NULL, NULL, &tv)) {//非阻塞，0超时，-1错误
-            LOGE(TAG, "Loop frame failed: %s", strerror(errno));
+        int ret = select(fd_count, &fds, NULL, NULL, &tv);
+        if (0 >= ret) {//非阻塞，0超时，-1错误
+            LOGE(TAG, "Loop frame failed: %d %s", ret, strerror(errno));
             continue;
         } else if (0 > ioctl(camera->fd, VIDIOC_DQBUF, &buffer)) {
             //TODO video/dev* disconnect, implement auto connect
             LOGE(TAG, "Loop frame failed2: %s", strerror(errno));
             break;
         } else if (camera->frameFormat == FRAME_FORMAT_MJPEG) {
-            //LOGD(TAG, "mjpeg interval time = %ld", timeMs() - time1);
+            //LOGI(TAG, "mjpeg interval time = %ld", timeMs() - time1);
             //time1 = timeMs();
 
             //MJPEG->NV12/YUV422
             uint8_t *data = camera->decoder->convert2YUV(camera->buffers[buffer.index].start, buffer.bytesused);
-            //LOGD(TAG, "decodeTime=%lld", timeMs() - time1)
+            //LOGI(TAG, "decodeTime=%lld", timeMs() - time1)
 
             //Render->RGBA
             renderFrame(data);
@@ -147,7 +148,7 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
             //Data->Java
             sendFrame(env, data);
         } else {
-            //LOGD(TAG, "yuyv interval time = %lld", timeMs() - time0)
+            //LOGI(TAG, "yuyv interval time = %lld", timeMs() - time0)
             //time0 = timeMs();
 
             //YUYV
@@ -171,7 +172,7 @@ void CameraAPI::renderFrame(uint8_t *data) {
     if (LIKELY(preview && data)) {
         preview->render(data);
     }
-    //LOGD(TAG, "renderTime=%lld", timeMs() - start)
+    //LOGI(TAG, "renderTime=%lld", timeMs() - start)
 }
 
 void CameraAPI::sendFrame(JNIEnv *env, uint8_t *data) {
@@ -194,15 +195,15 @@ ActionInfo CameraAPI::connect(unsigned int target_pid, unsigned int target_vid) 
             int vid = 0, pid = 0;
             dev_video_name.append("video").append(std::to_string(i));
             if (!(std::ifstream("/sys/class/video4linux/" + dev_video_name + "/device/modalias") >> modalias)) {
-                LOGD(TAG, "dev/%s : read modalias failed", dev_video_name.c_str());
+                LOGI(TAG, "dev/%s : read modalias failed", dev_video_name.c_str());
             } else if (modalias.size() < 14 || modalias.substr(0, 5) != "usb:v" || modalias[9] != 'p') {
-                LOGD(TAG, "dev/%s : format is not a usb of modalias", dev_video_name.c_str());
+                LOGI(TAG, "dev/%s : format is not a usb of modalias", dev_video_name.c_str());
             } else if (!(std::istringstream(modalias.substr(5, 4)) >> std::hex >> vid)) {
-                LOGD(TAG, "dev/%s : read vid failed", dev_video_name.c_str());
+                LOGI(TAG, "dev/%s : read vid failed", dev_video_name.c_str());
             } else if (!(std::istringstream(modalias.substr(10, 4)) >> std::hex >> pid)) {
-                LOGD(TAG, "dev/%s : read pid failed", dev_video_name.c_str());
+                LOGI(TAG, "dev/%s : read pid failed", dev_video_name.c_str());
             } else {
-                LOGD(TAG, "dev/%s : vid=%d, pid=%d", dev_video_name.c_str(), vid, pid);
+                LOGI(TAG, "dev/%s : vid=%d, pid=%d", dev_video_name.c_str(), vid, pid);
             }
             if (target_pid == pid && target_vid == vid) {
                 dev_video_name.insert(0, "dev/");
@@ -228,7 +229,7 @@ ActionInfo CameraAPI::connect(unsigned int target_pid, unsigned int target_vid) 
                     ::close(fd);
                     action = ACTION_ERROR_START;
                 } else {
-                    LOGD(TAG, "open: %s succeed", deviceName);
+                    LOGI(TAG, "open: %s succeed", deviceName);
                     status = STATUS_OPEN;
                 }
             }
@@ -250,7 +251,7 @@ ActionInfo CameraAPI::autoExposure(bool isAuto) {
             LOGW(TAG, "autoExposure: ioctl VIDIOC_S_CTRL failed, %s", strerror(errno));
             return ACTION_ERROR_AUTO_EXPOSURE;
         } else {
-            LOGD(TAG, "autoExposure: success");
+            LOGI(TAG, "autoExposure: success");
             return ACTION_SUCCESS;
         }
     } else {
@@ -269,7 +270,7 @@ ActionInfo CameraAPI::updateExposure(unsigned int level) {
             LOGE(TAG, "updateExposure: ioctl failed, %s", strerror(errno));
             return ACTION_ERROR_SET_EXPOSURE;
         } else {
-            LOGD(TAG, "updateExposure: success");
+            LOGI(TAG, "updateExposure: success");
             return ACTION_SUCCESS;
         }
     } else {
@@ -441,7 +442,7 @@ ActionInfo CameraAPI::start() {
                 status = STATUS_RUN;
                 //3-start thread loop frame
                 if (0 == pthread_create(&thread_camera, NULL, loopThread, (void *) this)) {
-                    LOGD(TAG, "start: success");
+                    LOGI(TAG, "start: success");
                     action = ACTION_SUCCESS;
                 } else {
                     LOGE(TAG, "start: pthread_create failed");
@@ -462,7 +463,7 @@ ActionInfo CameraAPI::stop() {
         status = STATUS_INIT;
         //1-stop thread
         if (0 == pthread_join(thread_camera, NULL)) {
-            LOGD(TAG, "stop: pthread_join success");
+            LOGI(TAG, "stop: pthread_join success");
         } else {
             LOGE(TAG, "stop: pthread_join failed, %s", strerror(errno));
             action = ACTION_ERROR_STOP;
@@ -476,7 +477,7 @@ ActionInfo CameraAPI::stop() {
             LOGE(TAG, "stop: ioctl failed: %s", strerror(errno));
             action = ACTION_ERROR_STOP;
         } else {
-            LOGD(TAG, "stop: ioctl VIDIOC_STREAMOFF success");
+            LOGI(TAG, "stop: ioctl VIDIOC_STREAMOFF success");
         }
         //5-release buffer
         for (int i = 0; i < MAX_BUFFER_COUNT; ++i) {
@@ -500,7 +501,7 @@ ActionInfo CameraAPI::close() {
             LOGE(TAG, "close: failed, %s", strerror(errno));
             action = ACTION_ERROR_CLOSE;
         } else {
-            LOGD(TAG, "close: success");
+            LOGI(TAG, "close: success");
         }
         //2-release buffer
         SAFE_FREE(buffers)
@@ -538,7 +539,7 @@ ActionInfo CameraAPI::destroy() {
     SAFE_FREE(buffers)
     SAFE_FREE(out_buffer)
     SAFE_DELETE(decoder)
-    LOGD(TAG, "destroy");
+    LOGI(TAG, "destroy");
     return ACTION_SUCCESS;
 }
 
