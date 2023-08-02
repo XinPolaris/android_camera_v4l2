@@ -59,7 +59,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     private LinearLayout ll;
     DebugTool debugTool;
     private int[][] supportFrameSize;
-    static int curFrameSizeIndex;
+    static int curFrameSizeIndex = 1;
     static int[] curFrameSize;
 
     @Override
