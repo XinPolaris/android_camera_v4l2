@@ -404,6 +404,31 @@ ActionInfo CameraAPI::setFrameCallback(JNIEnv *env, jobject frame_callback) {
     }
 }
 
+ActionInfo CameraAPI::captureImage(JNIEnv *env, jobject capture_callback) {
+    if (STATUS_INIT == getStatus()) {
+        if (captureCallback) {
+            env->DeleteGlobalRef(captureCallback);
+        }
+        if (capture_callback) {
+            jclass clazz = env->GetObjectClass(capture_callback);
+            if (LIKELY(clazz)) {
+                captureCallback = capture_callback;
+                captureCallback_onImageCapture = env->GetMethodID(clazz, "onImageCapture","(Ljava/lang/String;)V");
+            }
+            env->ExceptionClear();
+            if (!captureCallback_onImageCapture) {
+                env->DeleteGlobalRef(captureCallback);
+                captureCallback = NULL;
+                captureCallback_onImageCapture = NULL;
+            }
+        }
+        return ACTION_SUCCESS;
+    } else {
+        LOGW(TAG, "setFrameCallback: error status, %d", getStatus());
+        return ACTION_ERROR_CALLBACK;
+    }
+}
+
 ActionInfo CameraAPI::setPreview(ANativeWindow *window) {
     if (STATUS_INIT == getStatus()) {
         if (preview != NULL) {

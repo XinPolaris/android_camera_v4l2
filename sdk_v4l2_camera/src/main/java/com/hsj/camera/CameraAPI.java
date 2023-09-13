@@ -111,6 +111,17 @@ public final class CameraAPI {
         }
     }
 
+    public boolean imageCapture(String filePath, IImageCaptureCallback callback) {
+        if (this.nativeObj == 0) {
+            Log.w(TAG, "Can't be call after call destroy");
+            return false;
+        } else {
+            int status = nativeCaptureImage(this.nativeObj, filePath,  callback);
+            Logger.d(TAG, "imageCapture: " + status);
+            return STATUS_SUCCESS == status;
+        }
+    }
+
     public final boolean setPreview(Surface surface) {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call setPreview");
@@ -169,6 +180,8 @@ public final class CameraAPI {
     private native int nativeFrameSize(long nativeObj, int width, int height, int pixelFormat);
 
     private native int nativeFrameCallback(long nativeObj, IFrameCallback frameCallback);
+
+    private native int nativeCaptureImage(long nativeObj, String filePath, IImageCaptureCallback callback);
 
     private native int nativePreview(long nativeObj, Surface surface);
 

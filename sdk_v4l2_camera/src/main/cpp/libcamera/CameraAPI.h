@@ -48,6 +48,8 @@ private:
     CameraView *preview;
     jobject frameCallback;
     jmethodID frameCallback_onFrame;
+    jobject captureCallback;
+    jmethodID captureCallback_onImageCapture;
 
     pthread_t thread_camera;
     volatile StatusInfo status;
@@ -68,6 +70,7 @@ public:
     ActionInfo getSupportSize(std::vector<std::pair<int, int>> &sizes);
     ActionInfo setFrameSize(int width, int height, int frame_format);
     ActionInfo setFrameCallback(JNIEnv *env, jobject frame_callback);
+    ActionInfo captureImage(JNIEnv *env, jobject capture_callback);
     ActionInfo setPreview(ANativeWindow *window);
     ActionInfo start();
     ActionInfo stop();
