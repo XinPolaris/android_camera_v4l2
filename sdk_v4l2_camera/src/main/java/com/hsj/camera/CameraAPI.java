@@ -1,11 +1,7 @@
 package com.hsj.camera;
 
 import android.util.Log;
-import android.util.Pair;
 import android.view.Surface;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @Author:Hsj
@@ -78,7 +74,7 @@ public final class CameraAPI {
         if (this.nativeObj != 0) {
             sizes = nativeSupportSize(this.nativeObj);
             int length = (sizes == null ? 0 : sizes.length);
-            if (length > 0){
+            if (length > 0) {
                 Logger.d(TAG, "getSupportFrameSize: " + length);
             } else {
                 Logger.e(TAG, "getSupportFrameSize: empty");
@@ -111,12 +107,12 @@ public final class CameraAPI {
         }
     }
 
-    public boolean imageCapture(String filePath, IImageCaptureCallback callback) {
+    public boolean captureImage(String filePath, IImageCaptureCallback callback) {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call destroy");
             return false;
         } else {
-            int status = nativeCaptureImage(this.nativeObj, filePath,  callback);
+            int status = nativeCaptureImage(this.nativeObj, filePath, callback);
             Logger.d(TAG, "imageCapture: " + status);
             return STATUS_SUCCESS == status;
         }

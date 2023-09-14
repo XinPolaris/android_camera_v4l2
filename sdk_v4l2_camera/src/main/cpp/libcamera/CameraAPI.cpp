@@ -138,6 +138,9 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
             //LOGI(TAG, "mjpeg interval time = %ld", timeMs() - time1);
             //time1 = timeMs();
 
+            //capture image
+            captureImage(env, camera->buffers[buffer.index].start, buffer.bytesused);
+
             //MJPEG->NV12/YUV422
             uint8_t *data = camera->decoder->convert2YUV(camera->buffers[buffer.index].start, buffer.bytesused);
             //LOGI(TAG, "decodeTime=%lld", timeMs() - time1)
@@ -181,6 +184,26 @@ void CameraAPI::sendFrame(JNIEnv *env, uint8_t *data) {
         env->CallVoidMethod(frameCallback, frameCallback_onFrame, frame);
         env->DeleteLocalRef(frame);
         env->ExceptionClear();
+    }
+}
+
+void CameraAPI::captureImage(JNIEnv *env, void *raw_buffer, size_t raw_size) {
+    if (captureImageCallback != nullptr && captureImageFilePath != nullptr && captureImageCallback_onCapture && LIKELY(raw_buffer)) {
+        LOGI(TAG, "captureImage start");
+        LOGI(TAG, "captureImage %s", captureImageFilePath);
+        FILE* file = fopen(captureImageFilePath, "w+"); // 打开一个文件
+        if (file != nullptr) {
+            fwrite(raw_buffer, raw_size, 1, file); // 写入文件
+            fclose(file); // 写入完成，关闭文件
+        }
+        env->CallVoidMethod(captureImageCallback, captureImageCallback_onCapture, env->NewStringUTF(captureImageFilePath));
+        env->ExceptionClear();
+
+        //release
+        env->DeleteGlobalRef(captureImageCallback);
+        captureImageCallback = nullptr;
+        captureImageCallback_onCapture = nullptr;
+        captureImageFilePath = nullptr;
     }
 }
 
@@ -405,27 +428,33 @@ ActionInfo CameraAPI::setFrameCallback(JNIEnv *env, jobject frame_callback) {
     }
 }
 
-ActionInfo CameraAPI::captureImage(JNIEnv *env, jobject capture_callback) {
-    if (STATUS_INIT == getStatus()) {
-        if (captureCallback) {
-            env->DeleteGlobalRef(captureCallback);
+ActionInfo CameraAPI::captureImage(JNIEnv *env, jstring filePath, jobject capture_callback) {
+    if (STATUS_RUN == getStatus()) {
+        if (captureImageCallback) {
+            LOGD(TAG, "captureImage: 1");
+            env->DeleteGlobalRef(captureImageCallback);
         }
         if (capture_callback) {
+            LOGD(TAG, "captureImage: 2");
             jclass clazz = env->GetObjectClass(capture_callback);
             if (LIKELY(clazz)) {
-                captureCallback = capture_callback;
-                captureCallback_onImageCapture = env->GetMethodID(clazz, "onImageCapture","(Ljava/lang/String;)V");
+                LOGD(TAG, "captureImage: 3");
+                captureImageCallback = capture_callback;
+                captureImageCallback_onCapture = env->GetMethodID(clazz, "onImageCapture", "(Ljava/lang/String;)V");
+                captureImageFilePath = env->GetStringUTFChars(filePath, 0);
             }
             env->ExceptionClear();
-            if (!captureCallback_onImageCapture) {
-                env->DeleteGlobalRef(captureCallback);
-                captureCallback = NULL;
-                captureCallback_onImageCapture = NULL;
+            if (!captureImageCallback_onCapture) {
+                LOGD(TAG, "captureImage: 4");
+                env->DeleteGlobalRef(captureImageCallback);
+                captureImageCallback = nullptr;
+                captureImageCallback_onCapture = nullptr;
+                captureImageFilePath = nullptr;
             }
         }
         return ACTION_SUCCESS;
     } else {
-        LOGW(TAG, "setFrameCallback: error status, %d", getStatus());
+        LOGW(TAG, "captureImage: error status, %d", getStatus());
         return ACTION_ERROR_CALLBACK;
     }
 }

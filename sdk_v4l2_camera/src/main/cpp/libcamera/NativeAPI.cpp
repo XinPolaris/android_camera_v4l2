@@ -131,12 +131,13 @@ static ActionInfo nativePreview(JNIEnv *env, jobject thiz, CAMERA_ID cameraId, j
     return status;
 }
 
-static jint nativeCaptureImage(JNIEnv *env, jobject thiz, CAMERA_ID cameraId,jstring filePath, jobject callback) {
+static jint nativeCaptureImage(JNIEnv *env, jobject thiz, CAMERA_ID cameraId, jstring filePath,
+                               jobject callback) {
     auto *camera = reinterpret_cast<CameraAPI *>(cameraId);
     ActionInfo status = ACTION_ERROR_DESTROY;
     if (LIKELY(camera)) {
         jobject _capture_callback = env->NewGlobalRef(callback);
-        status = camera->captureImage(env,_capture_callback);
+        status = camera->captureImage(env, filePath, _capture_callback);
     }
     LOGI(TAG, "camera->imageCapture(): %d", status);
     return status;

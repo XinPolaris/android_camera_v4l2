@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -23,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.hsj.camera.CameraAPI;
 import com.hsj.camera.CameraView;
 import com.hsj.camera.IFrameCallback;
+import com.hsj.camera.IImageCaptureCallback;
 import com.hsj.camera.IRender;
 import com.hsj.camera.ISurfaceCallback;
 
@@ -70,6 +69,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         findViewById(R.id.btn_start).setOnClickListener(v -> start());
         findViewById(R.id.btn_stop).setOnClickListener(v -> stop());
         findViewById(R.id.btn_destroy).setOnClickListener(v -> destroy());
+        findViewById(R.id.btnSize).setOnClickListener(v -> showCameraSizeChoiceDialog());
         ll = findViewById(R.id.ll);
         CameraView cameraView = findViewById(R.id.cameraView);
         this.render = cameraView.getRender(CameraView.COMMON);
@@ -88,7 +88,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
 
         debugTool = new DebugTool(findViewById(R.id.debugInfo));
 
-        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnBack).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SampleActivity.mode = 2;
@@ -97,7 +97,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         });
 
         if (SampleActivity.mode == 1) {
-            findViewById(R.id.button).postDelayed(new Runnable() {
+            findViewById(R.id.btnBack).postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     finish();
@@ -164,9 +164,26 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.item_camera) {
-            showSingleChoiceDialog();
+            captureImage();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void captureImage() {
+        if (camera != null) {
+            String path = new StringBuilder().append(getExternalFilesDir(null)).append("/").append(System.currentTimeMillis()).append(".jpg").toString();
+            camera.captureImage(path, new IImageCaptureCallback() {
+                @Override
+                public void onImageCapture(String filePath) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(UVCActivity.this, "已拍照：" + filePath, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        }
     }
 
 //===========================================Camera=================================================
@@ -255,7 +272,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         return result;
     }
 
-    private void showSingleChoiceDialog() {
+    private void showCameraSizeChoiceDialog() {
 //        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 //        Collection<UsbDevice> values = usbManager.getDeviceList().values();
 //        final UsbDevice[] devices = values.toArray(new UsbDevice[]{});
