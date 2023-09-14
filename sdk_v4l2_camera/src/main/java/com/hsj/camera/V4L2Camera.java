@@ -9,7 +9,7 @@ import android.view.Surface;
  * @Class:CameraAPI
  * @Desc:CameraAPI
  */
-public final class CameraAPI {
+public final class V4L2Camera {
 
     private static final String TAG = "Camera";
     //FrameFormat
@@ -32,7 +32,7 @@ public final class CameraAPI {
 
     private long nativeObj;
 
-    public CameraAPI() {
+    public V4L2Camera() {
         this.nativeObj = nativeInit();
     }
 

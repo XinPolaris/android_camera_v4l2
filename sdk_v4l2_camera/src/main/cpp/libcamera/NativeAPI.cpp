@@ -8,7 +8,7 @@
 
 #define TAG "NativeAPI"
 #define OBJECT_ID "nativeObj"
-#define CLASS_NAME "com/hsj/camera/CameraAPI"
+#define CLASS_NAME "com/hsj/camera/V4L2Camera"
 
 typedef jlong CAMERA_ID;
 

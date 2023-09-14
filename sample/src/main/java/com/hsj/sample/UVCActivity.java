@@ -18,7 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.hsj.camera.CameraAPI;
+import com.hsj.camera.UsbCameraManager;
+import com.hsj.camera.V4L2Camera;
 import com.hsj.camera.CameraView;
 import com.hsj.camera.IFrameCallback;
 import com.hsj.camera.IImageCaptureCallback;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -44,14 +46,10 @@ import javax.microedition.khronos.opengles.GL10;
 public final class UVCActivity extends AppCompatActivity implements ISurfaceCallback {
 
     private static final String TAG = "MainActivity";
-    // Usb device: productId
-    private int pid;
-    // Usb device: vendorId
-    private int vid;
     // Dialog checked index
     private int index;
-    // CameraAPI
-    private CameraAPI camera;
+    // V4L2Camera
+    private V4L2Camera camera;
     // IRender
     private IRender render;
     private Surface surface;
@@ -111,16 +109,6 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     }
 
     private void initCamera() {
-        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        Collection<UsbDevice> values = usbManager.getDeviceList().values();
-        final UsbDevice[] devices = values.toArray(new UsbDevice[]{});
-        if (devices.length == 0) {
-            showToast("未识别到摄像头");
-            return;
-        }
-        this.pid = devices[0].getProductId();
-        this.vid = devices[0].getVendorId();
-
         create();
         start();
     }
@@ -190,18 +178,24 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
 
     private void create() {
         if (this.camera == null) {
-            CameraAPI camera = new CameraAPI();
-            boolean ret = camera.create(pid, vid);
-            supportFrameSize = camera.getSupportFrameSize();
-            if (supportFrameSize == null || supportFrameSize.length == 0) {
-                showToast("Get support preview size failed.");
-            } else {
-                curFrameSize = supportFrameSize[curFrameSizeIndex];
-                final int width = curFrameSize[0];
-                final int height = curFrameSize[1];
-                Log.i(TAG, "width=" + width + ", height=" + height);
-                if (ret) ret = camera.setFrameSize(width, height, CameraAPI.FRAME_FORMAT_MJPEG);
-                if (ret) this.camera = camera;
+            List<UsbDevice> deviceList = UsbCameraManager.getUsbCameraDevices(this);
+            if (deviceList.size() == 0) {
+                showToast("未识别到摄像头");
+                return;
+            }
+            V4L2Camera camera = UsbCameraManager.createUsbCamera(deviceList.get(0));
+            if (camera != null) {
+                supportFrameSize = camera.getSupportFrameSize();
+                if (supportFrameSize == null || supportFrameSize.length == 0) {
+                    showToast("Get support preview size failed.");
+                } else {
+                    curFrameSize = supportFrameSize[curFrameSizeIndex];
+                    final int width = curFrameSize[0];
+                    final int height = curFrameSize[1];
+                    Log.i(TAG, "width=" + width + ", height=" + height);
+                    camera.setFrameSize(width, height, V4L2Camera.FRAME_FORMAT_MJPEG);
+                    this.camera = camera;
+                }
             }
         } else {
             showToast("Camera had benn created");
@@ -242,65 +236,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
 
 //=============================================Other================================================
 
-    private boolean requestPermission() {
-        boolean result;
-        Process process = null;
-        DataOutputStream dos = null;
-        try {
-            process = Runtime.getRuntime().exec("su");
-            dos = new DataOutputStream(process.getOutputStream());
-            dos.writeBytes("chmod 666 /dev/video*\n");
-            dos.writeBytes("exit\n");
-            dos.flush();
-            result = (process.waitFor() == 0);
-        } catch (Exception e) {
-            e.printStackTrace();
-            result = false;
-        } finally {
-            try {
-                if (dos != null) {
-                    dos.close();
-                }
-                if (process != null) {
-                    process.destroy();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        Log.i(TAG, "request video rw permission: " + result);
-        return result;
-    }
-
     private void showCameraSizeChoiceDialog() {
-//        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-//        Collection<UsbDevice> values = usbManager.getDeviceList().values();
-//        final UsbDevice[] devices = values.toArray(new UsbDevice[]{});
-//        int size = devices.length;
-//        if (size == 0) {
-//            showToast("No Usb device to be found");
-//        } else {
-//            // stop and destroy
-//            stop();
-//            destroy();
-//            this.ll.setVisibility(View.GONE);
-//            // get Usb devices name
-//            String[] items = new String[size];
-//            for (int i = 0; i < size; ++i) {
-//                items[i] = "Device: " + devices[i].getProductName();
-//            }
-//            // dialog
-//            if (index >= size) index = 0;
-//            AlertDialog.Builder ad = new AlertDialog.Builder(this);
-//            ad.setTitle(R.string.select_usb_device);
-//            ad.setSingleChoiceItems(items, index, (dialog, which) -> index = which);
-//            ad.setPositiveButton(R.string.btn_confirm, (dialog, which) -> {
-//                this.pid = devices[index].getProductId();
-//                this.vid = devices[index].getVendorId();
-//                this.ll.setVisibility(View.VISIBLE);
-//            });
-//            ad.show();
-//        }
         if (supportFrameSize != null) {
             String[] items = new String[supportFrameSize.length];
             for (int i = 0; i < supportFrameSize.length; ++i) {
@@ -331,27 +267,4 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     private void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
-
-    private boolean saveFile(String dstFile, ByteBuffer data) {
-        if (TextUtils.isEmpty(dstFile)) return false;
-        boolean ret = false;
-        FileChannel fc = null;
-        try {
-            fc = new FileOutputStream(dstFile).getChannel();
-            fc.write(data);
-            ret = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fc != null) {
-                try {
-                    fc.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return ret;
-    }
-
 }
