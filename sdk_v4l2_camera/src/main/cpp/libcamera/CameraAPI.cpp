@@ -490,9 +490,11 @@ ActionInfo CameraAPI::start() {
             //1-start stream
             enum v4l2_buf_type type;
             type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            if (0 > ioctl(fd, VIDIOC_STREAMON, &type)) {
-                LOGE(TAG, "start: ioctl VIDIOC_STREAMON failed, %s", strerror(errno));
+            int streamOnRet = ioctl(fd, VIDIOC_STREAMON, &type);
+            if (0 > streamOnRet) {
+                LOGE(TAG, "start: ioctl VIDIOC_STREAMON failed, %s(streamOnRet->%d)", strerror(errno), streamOnRet);
             } else {
+                LOGI(TAG, "start: ioctl VIDIOC_STREAMON success, %s(streamOnRet->%d)", strerror(errno), streamOnRet);
                 status = STATUS_RUN;
                 //3-start thread loop frame
                 if (0 == pthread_create(&thread_camera, NULL, loopThread, (void *) this)) {
