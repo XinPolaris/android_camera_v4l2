@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -56,8 +57,8 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     private LinearLayout ll;
     DebugTool debugTool;
     private int[][] supportFrameSize;
-    static int curFrameSizeIndex = 1;
-    static int[] curFrameSize;
+    private static int saveFrameSize = 1280*720;
+    private static int[] curFrameSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,16 +190,16 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
                 if (supportFrameSize == null || supportFrameSize.length == 0) {
                     showToast("Get support preview size failed.");
                 } else {
-                    curFrameSize = supportFrameSize[curFrameSizeIndex];
+                    curFrameSize = supportFrameSize[findSizeIndex(saveFrameSize)];
                     final int width = curFrameSize[0];
                     final int height = curFrameSize[1];
                     Log.i(TAG, "width=" + width + ", height=" + height);
                     camera.setFrameSize(width, height, V4L2Camera.FRAME_FORMAT_MJPEG);
                     this.camera = camera;
                 }
+            } else {
+                showToast("摄像头创建失败");
             }
-        } else {
-            showToast("Camera had benn created");
         }
     }
 
@@ -207,8 +208,6 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
             if (surface != null) this.camera.setPreview(surface);
             this.camera.setFrameCallback(frameCallback);
             this.camera.start();
-        } else {
-            showToast("Camera have not create");
         }
     }
 
@@ -244,10 +243,10 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
             }
             AlertDialog.Builder ad = new AlertDialog.Builder(this);
             ad.setTitle(R.string.select_usb_device);
-            ad.setSingleChoiceItems(items, curFrameSizeIndex, new DialogInterface.OnClickListener() {
+            ad.setSingleChoiceItems(items, findSizeIndex(saveFrameSize), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    curFrameSizeIndex = which;
+                    saveFrameSize = supportFrameSize[which][0]*supportFrameSize[which][1];
                 }
             });
             ad.setPositiveButton(R.string.btn_confirm, (dialog, which) -> {
@@ -256,6 +255,16 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
             });
             ad.show();
         }
+    }
+
+    private int findSizeIndex(int sizeSum) {
+        int sizeIndex = 0;
+        for (int i = 0; i < supportFrameSize.length; i++) {
+            if (supportFrameSize[i][0] * supportFrameSize[i][1] <= saveFrameSize) {
+                sizeIndex = i;
+            }
+        }
+        return sizeIndex;
     }
 
     @Override

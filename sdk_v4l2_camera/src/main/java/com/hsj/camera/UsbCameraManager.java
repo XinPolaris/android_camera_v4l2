@@ -8,6 +8,7 @@ import android.util.Log;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  */
 public final class UsbCameraManager {
 
-    private static final String TAG = "CameraManager";
+    private static final String TAG = "CameraAPI";
 
     public static List<UsbDevice> getUsbCameraDevices(Context context) {
         List<UsbDevice> cameras = new ArrayList<>();
@@ -27,6 +28,7 @@ public final class UsbCameraManager {
                 cameras.add(device);
             }
         }
+        Log.i(TAG, "getUsbCameraDevices: "+ Arrays.toString(cameras.toArray()));
         return cameras;
     }
 
