@@ -46,7 +46,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public final class UVCActivity extends AppCompatActivity implements ISurfaceCallback {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "UVCActivity";
     // Dialog checked index
     private int index;
     // V4L2Camera
@@ -58,11 +58,12 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     DebugTool debugTool;
     private int[][] supportFrameSize;
     private static int saveFrameSize = 1280*720;
-    private static int[] curFrameSize;
+    private int[] curFrameSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate: ");
         setContentView(R.layout.activity_uvc);
         findViewById(R.id.btn_create).setOnClickListener(v -> create());
         findViewById(R.id.btn_start).setOnClickListener(v -> start());
@@ -117,6 +118,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume: ");
         if (render != null) {
             render.onRender(true);
         }
@@ -125,6 +127,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     @Override
     protected void onPause() {
         super.onPause();
+        Log.i(TAG, "onPause: ");
         if (render != null) {
             render.onRender(false);
         }
@@ -133,12 +136,14 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     @Override
     protected void onStop() {
         super.onStop();
+        Log.i(TAG, "onStop: ");
         stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.i(TAG, "onDestroy: ");
         destroy();
     }
 
@@ -198,6 +203,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
                     this.camera = camera;
                 }
             } else {
+                Log.e(TAG, "create camera: fail");
                 showToast("摄像头创建失败");
             }
         }
@@ -260,7 +266,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     private int findSizeIndex(int sizeSum) {
         int sizeIndex = 0;
         for (int i = 0; i < supportFrameSize.length; i++) {
-            if (supportFrameSize[i][0] * supportFrameSize[i][1] <= saveFrameSize) {
+            if (supportFrameSize[i][0] * supportFrameSize[i][1] <= sizeSum) {
                 sizeIndex = i;
             }
         }

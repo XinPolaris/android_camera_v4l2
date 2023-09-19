@@ -10,10 +10,14 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import com.hsj.camera.UsbCameraManager;
+
 /**
  * Created by HuangXin on 2023/6/27.
  */
 public class SampleActivity extends Activity {
+
+    private static final String TAG = "SampleActivity";
 
     public static int startCount = 0;
     public static boolean isPreview = false;
@@ -22,8 +26,6 @@ public class SampleActivity extends Activity {
     static int mode = 2;
     TextView textView1;
 
-    private static final String TAG = "MainActivity";
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,7 +33,7 @@ public class SampleActivity extends Activity {
         findViewById(R.id.finish).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                System.exit(0);
             }
         });
         textView1 = findViewById(R.id.textView1);
@@ -62,7 +64,7 @@ public class SampleActivity extends Activity {
     }
 
     private void startV4L2CameraActivity(long delayMillis) {
-        String msg = "循环开关摄像头（每20秒）测试\n打开次数 " + startCount + "，出流次数 " + previewCount;
+        String msg = "循环开关摄像头（每10秒）测试\n打开次数 " + startCount + "，出流次数 " + previewCount;
         Log.i(TAG, msg);
         textView1.setText(msg);
         findViewById(R.id.root).postDelayed(new Runnable() {
