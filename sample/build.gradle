@@ -91,9 +91,6 @@ dependencies {
 
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 
-    //LeakCanary
-    debugImplementation rootProject.ext.dependencies.leak_canary
-
     //sdk_v4l2_camera
     implementation project(path: ':sdk_v4l2_camera')
 

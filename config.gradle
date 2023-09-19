@@ -50,9 +50,6 @@ ext {
             lifecycle_viewmodel         : 'androidx.lifecycle:lifecycle-viewmodel:2.2.0',
             lifecycle_extensions        : 'androidx.lifecycle:lifecycle-extensions:2.2.0',
             material                    : 'com.google.android.material:material:1.2.0',
-
-            //LeakCanary
-            leak_canary                 : 'com.squareup.leakcanary:leakcanary-android:2.4',
     ]
 
 }
