@@ -8,7 +8,6 @@ import android.util.Log;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,7 +16,7 @@ import java.util.List;
  */
 public final class UsbCameraManager {
 
-    private static final String TAG = "CameraAPI";
+    private static final String TAG = "UsbCameraManager";
 
     public static List<UsbDevice> getUsbCameraDevices(Context context) {
         List<UsbDevice> cameras = new ArrayList<>();
@@ -28,7 +27,12 @@ public final class UsbCameraManager {
                 cameras.add(device);
             }
         }
-        Log.i(TAG, "getUsbCameraDevices: "+ Arrays.toString(cameras.toArray()));
+        for (int i = 0; i < cameras.size(); i++) {
+            Log.i(TAG, "getUsbCameraDevices: " + i + "->" + cameras.get(i));
+        }
+        if (cameras.size() == 0) {
+            Log.e(TAG, "create camera: not find camera device");
+        }
         return cameras;
     }
 
@@ -73,9 +77,10 @@ public final class UsbCameraManager {
 
     /**
      * request permission /dev/video*
+     *
      * @return result
      */
-    private static boolean requestDevVideoPermission() {
+    public static boolean requestDevVideoPermission() {
         boolean result;
         Process process = null;
         DataOutputStream dos = null;

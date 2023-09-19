@@ -11,7 +11,7 @@ import android.view.Surface;
  */
 public final class V4L2Camera {
 
-    private static final String TAG = "Camera";
+    private static final String TAG = "V4L2Camera";
     //FrameFormat
     public static final int FRAME_FORMAT_MJPEG = 0;
     public static final int FRAME_FORMAT_YUYV = 1;
@@ -36,73 +36,73 @@ public final class V4L2Camera {
         this.nativeObj = nativeInit();
     }
 
-    public final synchronized boolean create(int productId, int vendorId) {
+    public synchronized boolean create(int productId, int vendorId) {
         if (this.nativeObj == 0) {
             Log.e(TAG, "Can't be call after call destroy");
             return false;
         } else {
             int status = nativeCreate(this.nativeObj, productId, vendorId);
-            Logger.d(TAG, "create: " + status);
+            Log.i(TAG, "create: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final boolean setAutoExposure(boolean isAuto) {
+    public boolean setAutoExposure(boolean isAuto) {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call destroy");
             return false;
         } else {
             int status = nativeAutoExposure(this.nativeObj, isAuto);
-            Logger.d(TAG, "setAutoExposure: " + status);
+            Log.i(TAG, "setAutoExposure: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final boolean setExposureLevel(int level) {
+    public boolean setExposureLevel(int level) {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call destroy");
             return false;
         } else {
             int status = nativeSetExposure(this.nativeObj, level);
-            Logger.d(TAG, "setExposureLevel: " + status);
+            Log.i(TAG, "setExposureLevel: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final int[][] getSupportFrameSize() {
+    public int[][] getSupportFrameSize() {
         int[][] sizes = null;
         if (this.nativeObj != 0) {
             sizes = nativeSupportSize(this.nativeObj);
             int length = (sizes == null ? 0 : sizes.length);
             if (length > 0) {
-                Logger.d(TAG, "getSupportFrameSize: " + length);
+                Log.i(TAG, "getSupportFrameSize: " + length);
             } else {
-                Logger.e(TAG, "getSupportFrameSize: empty");
+                Log.e(TAG, "getSupportFrameSize: empty");
             }
         } else {
-            Logger.e(TAG, "getSupportFrameSize: already destroyed");
+            Log.e(TAG, "getSupportFrameSize: already destroyed");
         }
         return sizes;
     }
 
-    public final boolean setFrameSize(int width, int height, int frameFormat) {
+    public boolean setFrameSize(int width, int height, int frameFormat) {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call destroy");
             return false;
         } else {
             int status = nativeFrameSize(this.nativeObj, width, height, frameFormat);
-            Logger.d(TAG, "setFrameSize: " + status);
+            Log.i(TAG, "setFrameSize: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final boolean setFrameCallback(IFrameCallback frameCallback) {
+    public boolean setFrameCallback(IFrameCallback frameCallback) {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call destroy");
             return false;
         } else {
             int status = nativeFrameCallback(this.nativeObj, frameCallback);
-            Logger.d(TAG, "setFrameCallback: " + status);
+            Log.i(TAG, "setFrameCallback: " + status);
             return STATUS_SUCCESS == status;
         }
     }
@@ -113,50 +113,50 @@ public final class V4L2Camera {
             return false;
         } else {
             int status = nativeCaptureImage(this.nativeObj, filePath, callback);
-            Logger.d(TAG, "imageCapture: " + status);
+            Log.i(TAG, "imageCapture: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final boolean setPreview(Surface surface) {
+    public boolean setPreview(Surface surface) {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call setPreview");
             return false;
         } else {
             int status = nativePreview(this.nativeObj, surface);
-            Logger.d(TAG, "setPreview: " + status);
+            Log.i(TAG, "setPreview: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final synchronized boolean start() {
+    public synchronized boolean start() {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call destroy");
             return false;
         } else {
             int status = nativeStart(this.nativeObj);
-            Logger.d(TAG, "start: " + status);
+            Log.i(TAG, "start: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final synchronized boolean stop() {
+    public synchronized boolean stop() {
         if (this.nativeObj == 0) {
             Log.w(TAG, "Can't be call after call destroy");
             return false;
         } else {
             int status = nativeStop(this.nativeObj);
-            Logger.d(TAG, "stop: " + status);
+            Log.i(TAG, "stop: " + status);
             return STATUS_SUCCESS == status;
         }
     }
 
-    public final synchronized void destroy() {
+    public synchronized void destroy() {
         if (this.nativeObj == 0) {
-            Logger.w(TAG, "destroy: already destroyed");
+            Log.w(TAG, "destroy: already destroyed");
         } else {
             int status = nativeDestroy(this.nativeObj);
-            Logger.w(TAG, "destroy: " + status);
+            Log.w(TAG, "destroy: " + status);
             this.nativeObj = 0;
         }
     }

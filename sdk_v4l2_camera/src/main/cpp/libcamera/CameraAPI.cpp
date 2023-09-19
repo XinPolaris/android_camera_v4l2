@@ -242,6 +242,7 @@ ActionInfo CameraAPI::connect(unsigned int target_pid, unsigned int target_vid) 
         } else {
             const char *deviceName = dev_video_name.data();
             fd = open(deviceName, O_RDWR | O_NONBLOCK, S_IRWXU);
+            LOGI(TAG, "open: fd=%d", fd);
             if (0 > fd) {
                 LOGE(TAG, "open: %s failed, %s", deviceName, strerror(errno));
                 action = ACTION_ERROR_OPEN_FAIL;
@@ -549,6 +550,7 @@ ActionInfo CameraAPI::stop() {
 }
 
 ActionInfo CameraAPI::close() {
+    LOGI(TAG, "close: fd=%d", fd);
     ActionInfo action = ACTION_SUCCESS;
     if (STATUS_INIT == getStatus()) {
         status = STATUS_CREATE;
@@ -578,6 +580,13 @@ ActionInfo CameraAPI::close() {
         }
     } else {
         LOGW(TAG, "close: error status, %d", getStatus());
+        //1-close fd
+        if (0 > ::close(fd)) {
+            LOGE(TAG, "close: failed, %s", strerror(errno));
+            action = ACTION_ERROR_CLOSE;
+        } else {
+            LOGI(TAG, "close: success");
+        }
     }
     return action;
 }
