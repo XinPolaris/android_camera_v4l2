@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -63,7 +64,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate: ");
+        Log.i(TAG, "onCreate: " + SampleActivity.mode);
         setContentView(R.layout.activity_uvc);
         findViewById(R.id.btn_create).setOnClickListener(v -> create());
         findViewById(R.id.btn_start).setOnClickListener(v -> start());
@@ -96,13 +97,17 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
             }
         });
 
+        Button btnBack = findViewById(R.id.btnBack);
         if (SampleActivity.mode == 1) {
-            findViewById(R.id.btnBack).postDelayed(new Runnable() {
+            btnBack.setText("退出自动开关测试");
+            btnBack.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     finish();
                 }
             }, 8_000);
+        } else {
+            btnBack.setText("退出长时间推流测试");
         }
 
 //        //Request permission: /dev/video*
@@ -118,7 +123,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume: ");
+        Log.i(TAG, "onResume: " + SampleActivity.mode);
         if (render != null) {
             render.onRender(true);
         }
