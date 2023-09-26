@@ -10,8 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -54,7 +52,6 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     private int[][] supportFrameSize;
     private static int saveFrameSize = 1280 * 720;
     private int[] curFrameSize;
-    private CameraView cameraView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +60,9 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         binding = ActivityUvcBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
         binding.btnSize.setOnClickListener(v -> showCameraSizeChoiceDialog());
-        cameraView = findViewById(R.id.cameraView);
-        this.render = cameraView.getRender(CameraView.COMMON);
+        this.render = binding.cameraView.getRender(CameraView.COMMON);
         this.render.setSurfaceCallback(this);
-        cameraView.surfaceCallback = new CameraView.SurfaceCallback() {
+        binding.cameraView.surfaceCallback = new CameraView.SurfaceCallback() {
             @Override
             public void onSurfaceCreated(GL10 gl, EGLConfig config) {
                 runOnUiThread(new Runnable() {
@@ -205,9 +201,9 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
                     final int width = curFrameSize[0];
                     final int height = curFrameSize[1];
                     Log.i(TAG, "width=" + width + ", height=" + height);
-                    ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) cameraView.getLayoutParams();
+                    ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) binding.cameraView.getLayoutParams();
                     layoutParams.dimensionRatio = width + ":" + height;
-                    cameraView.setLayoutParams(layoutParams);
+                    binding.cameraView.setLayoutParams(layoutParams);
                     camera.setFrameSize(width, height, V4L2Camera.FRAME_FORMAT_MJPEG);
                     this.camera = camera;
                 }
