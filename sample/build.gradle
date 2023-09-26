@@ -29,6 +29,12 @@ android {
             keyAlias 'signway'
             keyPassword '123456'
         }
+//        debug {
+//            storeFile file("platform_debug.keystore")
+//            storePassword 'android'
+//            keyAlias 'androiddebugkey'
+//            keyPassword 'android'
+//        }
     }
 
     buildTypes {

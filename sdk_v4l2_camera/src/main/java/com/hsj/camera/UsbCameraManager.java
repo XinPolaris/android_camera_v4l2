@@ -41,8 +41,12 @@ public final class UsbCameraManager {
             Log.e(TAG, "createUsbCamera: device not USB Camera");
             return null;
         }
+        return createV4L2Camera(device.getProductId(), device.getVendorId());
+    }
+
+    public static V4L2Camera createV4L2Camera(int productId, int vendorId) {
         V4L2Camera camera = new V4L2Camera();
-        boolean ret = camera.create(device.getProductId(), device.getVendorId());
+        boolean ret = camera.create(productId, vendorId);
         if (ret) {
             return camera;
         }
