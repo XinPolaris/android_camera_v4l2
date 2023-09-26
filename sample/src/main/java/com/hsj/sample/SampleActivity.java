@@ -5,18 +5,20 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.hsj.camera.UsbCameraManager;
+import com.hsj.sample.databinding.ActivitySampleBinding;
+import com.hsj.sample.image.GLShowImageActivity;
 
 /**
  * Created by HuangXin on 2023/6/27.
  */
 public class SampleActivity extends Activity {
 
+    private ActivitySampleBinding binding;
     private static final String TAG = "SampleActivity";
 
     public static int startCount = 0;
@@ -24,31 +26,37 @@ public class SampleActivity extends Activity {
     public static int previewCount = 0;
 
     static int mode = 2;
-    TextView textView1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sample);
-        findViewById(R.id.finish).setOnClickListener(new View.OnClickListener() {
+        binding = ActivitySampleBinding.inflate(LayoutInflater.from(this));
+        setContentView(binding.root);
+        binding.finish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 System.exit(0);
             }
         });
-        textView1 = findViewById(R.id.textView1);
-        textView1.setOnClickListener(new View.OnClickListener() {
+        binding.textView1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mode = 1;
                 startV4L2CameraActivity(0);
             }
         });
-        findViewById(R.id.textView2).setOnClickListener(new View.OnClickListener() {
+        binding.textView2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mode = 2;
                 startActivity(new Intent(SampleActivity.this, UVCActivity.class));
+            }
+        });
+        binding.textView3.setVisibility(View.VISIBLE);
+        binding.textView3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(SampleActivity.this, GLShowImageActivity.class));
             }
         });
     }
@@ -66,7 +74,7 @@ public class SampleActivity extends Activity {
     private void startV4L2CameraActivity(long delayMillis) {
         String msg = "循环开关摄像头（每10秒）测试\n打开次数 " + startCount + "，出流次数 " + previewCount;
         Log.i(TAG, msg);
-        textView1.setText(msg);
+        binding.textView1.setText(msg);
         findViewById(R.id.root).postDelayed(new Runnable() {
             @Override
             public void run() {

@@ -32,10 +32,10 @@ final class RenderCommon implements IRender {
      * 顶点坐标
      */
     private static final float VERTEX_BUFFER[] = {
-            -1.0f, 1.0f,  //top left
-            -1.0f, -1.0f,  //bottom left
-            1.0f, 1.0f,  //top right
-            1.0f, -1.0f,  //bottom left
+            -1.0f, -1.0f, // v1
+            1.0f, -1.0f,  // v2
+            -1.0f, 1.0f,  // v3
+            1.0f, 1.0f,   // v4
     };
 
     /*
@@ -43,10 +43,10 @@ final class RenderCommon implements IRender {
      * Camera: 后置Sensor->Rotate90°, 前置使用->Mirror
      */
     private static final float TEXTURE_BUFFER[] = {
-            0.0f, 0.0f,  //top left
-            1.0f, 0.0f,  //bottom left
-            0.0f, 1.0f,  //top right
-            1.0f, 1.0f,  //bottom right
+            0.0f, 1.0f, // v1
+            1.0f, 1.0f, // v2
+            0.0f, 0.0f, // v3
+            1.0f, 0.0f, // v4
     };
 
     private int program, vPosition, vTexCoord, vTexture;

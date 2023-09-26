@@ -1,12 +1,11 @@
 package com.hsj.sample;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
@@ -18,22 +17,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.hsj.camera.UsbCameraManager;
-import com.hsj.camera.V4L2Camera;
 import com.hsj.camera.CameraView;
 import com.hsj.camera.IFrameCallback;
 import com.hsj.camera.IImageCaptureCallback;
 import com.hsj.camera.IRender;
 import com.hsj.camera.ISurfaceCallback;
+import com.hsj.camera.UsbCameraManager;
+import com.hsj.camera.V4L2Camera;
+import com.hsj.sample.databinding.ActivityUvcBinding;
 
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.File;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -48,31 +44,26 @@ import javax.microedition.khronos.opengles.GL10;
 public final class UVCActivity extends AppCompatActivity implements ISurfaceCallback {
 
     private static final String TAG = "UVCActivity";
-    // Dialog checked index
-    private int index;
+    private ActivityUvcBinding binding;
     // V4L2Camera
     private V4L2Camera camera;
     // IRender
     private IRender render;
     private Surface surface;
-    private LinearLayout ll;
     DebugTool debugTool;
     private int[][] supportFrameSize;
-    private static int saveFrameSize = 1280*720;
+    private static int saveFrameSize = 1280 * 720;
     private int[] curFrameSize;
+    private CameraView cameraView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate: " + SampleActivity.mode);
-        setContentView(R.layout.activity_uvc);
-        findViewById(R.id.btn_create).setOnClickListener(v -> create());
-        findViewById(R.id.btn_start).setOnClickListener(v -> start());
-        findViewById(R.id.btn_stop).setOnClickListener(v -> stop());
-        findViewById(R.id.btn_destroy).setOnClickListener(v -> destroy());
-        findViewById(R.id.btnSize).setOnClickListener(v -> showCameraSizeChoiceDialog());
-        ll = findViewById(R.id.ll);
-        CameraView cameraView = findViewById(R.id.cameraView);
+        binding = ActivityUvcBinding.inflate(LayoutInflater.from(this));
+        setContentView(binding.getRoot());
+        binding.btnSize.setOnClickListener(v -> showCameraSizeChoiceDialog());
+        cameraView = findViewById(R.id.cameraView);
         this.render = cameraView.getRender(CameraView.COMMON);
         this.render.setSurfaceCallback(this);
         cameraView.surfaceCallback = new CameraView.SurfaceCallback() {
@@ -89,7 +80,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
 
         debugTool = new DebugTool(findViewById(R.id.debugInfo));
 
-        findViewById(R.id.btnBack).setOnClickListener(new View.OnClickListener() {
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SampleActivity.mode = 2;
@@ -97,22 +88,29 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
             }
         });
 
-        Button btnBack = findViewById(R.id.btnBack);
         if (SampleActivity.mode == 1) {
-            btnBack.setText("退出自动开关测试");
-            btnBack.postDelayed(new Runnable() {
+            binding.btnBack.setText("退出自动开关测试");
+            binding.btnBack.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     finish();
                 }
             }, 8_000);
         } else {
-            btnBack.setText("退出长时间推流测试");
+            binding.btnBack.setText("退出长时间推流测试");
         }
 
 //        //Request permission: /dev/video*
 //        boolean ret = requestPermission();
 //        showToast("Request permission: " + (ret ? "succeed" : "failed"));
+
+        binding.ivCloseCapture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                binding.ivCapture.setVisibility(View.GONE);
+                binding.ivCloseCapture.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void initCamera() {
@@ -177,6 +175,9 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            binding.ivCapture.setImageURI(Uri.fromFile(new File(filePath)));
+                            binding.ivCapture.setVisibility(View.VISIBLE);
+                            binding.ivCloseCapture.setVisibility(View.VISIBLE);
                             Toast.makeText(UVCActivity.this, "已拍照：" + filePath, Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -204,6 +205,9 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
                     final int width = curFrameSize[0];
                     final int height = curFrameSize[1];
                     Log.i(TAG, "width=" + width + ", height=" + height);
+                    ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) cameraView.getLayoutParams();
+                    layoutParams.dimensionRatio = width + ":" + height;
+                    cameraView.setLayoutParams(layoutParams);
                     camera.setFrameSize(width, height, V4L2Camera.FRAME_FORMAT_MJPEG);
                     this.camera = camera;
                 }
@@ -257,7 +261,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
             ad.setSingleChoiceItems(items, findSizeIndex(saveFrameSize), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    saveFrameSize = supportFrameSize[which][0]*supportFrameSize[which][1];
+                    saveFrameSize = supportFrameSize[which][0] * supportFrameSize[which][1];
                 }
             });
             ad.setPositiveButton(R.string.btn_confirm, (dialog, which) -> {

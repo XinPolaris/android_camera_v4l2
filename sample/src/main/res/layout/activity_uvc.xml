@@ -1,81 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true"
     tools:context=".UVCActivity">
 
-    <com.hsj.camera.CameraView
-        android:id="@+id/cameraView"
-        android:layout_width="640dp"
-        android:layout_height="480dp"
-        android:layout_margin="10dp"
-        android:layout_centerHorizontal="true"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <Button
+        <com.hsj.camera.CameraView
+            android:id="@+id/cameraView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1280:720"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="退出当前测试" />
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:minWidth="150dp"
+        android:padding="10dp"
+        android:text="退出当前测试"
+        android:textColor="@android:color/white" />
 
-    <Button
+    <TextView
         android:id="@+id/btnSize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
         android:layout_below="@+id/btnBack"
-        android:text="切换分辨率" />
-
-    <LinearLayout
-        android:id="@+id/ll"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="15dp"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        android:weightSum="4">
-
-        <Button
-            android:id="@+id/btn_create"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="2dp"
-            android:layout_weight="1"
-            android:text="@string/txt_create"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/btn_start"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="2dp"
-            android:layout_weight="1"
-            android:text="@string/txt_start"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/btn_stop"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="2dp"
-            android:layout_weight="1"
-            android:text="@string/txt_stop"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/btn_destroy"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="2dp"
-            android:layout_marginEnd="2dp"
-            android:layout_weight="1"
-            android:text="@string/txt_destroy"
-            android:textAllCaps="false" />
-
-    </LinearLayout>
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:minWidth="150dp"
+        android:padding="10dp"
+        android:text="切换分辨率"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/debugInfo"
@@ -88,5 +66,24 @@
         android:layout_marginBottom="20dp"
         android:textColor="#00FF00"
         tools:text="fps: 30" />
+
+    <ImageView
+        android:id="@+id/ivCapture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:visibility="gone"
+        tools:src="@drawable/thelittleprince"
+        tools:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/ivCloseCapture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="50dp"
+        android:padding="30dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:visibility="gone" />
 
 </RelativeLayout>
