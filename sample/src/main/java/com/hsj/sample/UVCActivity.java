@@ -226,7 +226,6 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
 
         @Override
         public void onFrame(ByteBuffer data) {
-            Log.i(TAG, "onFrame: ");
             debugTool.onDataCallback(data, 0, curFrameSize[0], curFrameSize[1]);
         }
     };

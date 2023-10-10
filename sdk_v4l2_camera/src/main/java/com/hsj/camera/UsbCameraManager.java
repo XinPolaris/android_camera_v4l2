@@ -27,9 +27,6 @@ public final class UsbCameraManager {
                 cameras.add(device);
             }
         }
-        for (int i = 0; i < cameras.size(); i++) {
-            Log.i(TAG, "getUsbCameraDevices: " + i + "->" + cameras.get(i));
-        }
         if (cameras.size() == 0) {
             Log.e(TAG, "create camera: not find camera device");
         }
