@@ -494,6 +494,12 @@ ActionInfo CameraAPI::start() {
             int streamOnRet = ioctl(fd, VIDIOC_STREAMON, &type);
             if (0 > streamOnRet) {
                 LOGE(TAG, "start: ioctl VIDIOC_STREAMON failed, %s(streamOnRet->%d)", strerror(errno), streamOnRet);
+                //5-release buffer
+                for (int i = 0; i < MAX_BUFFER_COUNT; ++i) {
+                    if (0 != munmap(buffers[i].start, buffers[i].length)) {
+                        LOGW(TAG, "start: stop: munmap failed");
+                    }
+                }
             } else {
                 LOGI(TAG, "start: ioctl VIDIOC_STREAMON success, %s(streamOnRet->%d)", strerror(errno), streamOnRet);
                 status = STATUS_RUN;
