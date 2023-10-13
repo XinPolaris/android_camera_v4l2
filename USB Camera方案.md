@@ -1,0 +1,74 @@
+Android 设备基于 `linux kernel`, 自带 `V4L2` 支持，但是 OEM 厂商实现不同，大多默认关闭该功能。所以一般开发者或终端用户想要在 Android 设备上使用 usb camera 不是一件容易的事情。
+
+这里简单介绍几种针对开发者来说，可选择的实现方案.
+
+## [](#基于-libuvc-开发 "基于 libuvc 开发")基于 libuvc 开发
+
+[libuvc](https://github.com/libuvc/libuvc) 是一个跨平台开发库，基于 `libusb`，功能包括 UVC 设备识别与控制，视频流传输，视频流格式转换等。
+
+Android 平台上已有一个 Usb Camera 的开源项目，基于 `libucv` 的Android 应用，[UVCCamera](https://github.com/saki4510t/UVCCamera) 无需 `root` 权限即可预览显示连接到手机的 usb camera 设备。
+
+`libuvc` 官网介绍：
+
+> libuvc is a cross-platform library for USB video devices, built atop libusb. It enables fine-grained control over USB video devices exporting the standard USB Video Class (UVC) interface, enabling developers to write drivers for previously unsupported devices, or just access UVC devices in a generic fashion.
+
+> libuvc is a library that supports enumeration, control and streaming for USB Video Class (UVC) devices, such as consumer webcams.  
+> Features
+
++   UVC device discovery and management API
++   Video streaming (device to host) with asynchronous/callback and synchronous/polling modes
++   Read/write access to standard device settings
++   Conversion between various formats: RGB, YUV, JPEG, etc.
++   Tested on Mac and Linux, portable to Windows and some BSDs
+
+代码支持 CMake，android 平台编译：
+
+<table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/libuvc/libuvc</span><br><span class="line"><span class="built_in">cd</span> libuvc</span><br><span class="line"><span class="built_in">mkdir</span> build</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake \</span><br><span class="line">    -D CMAKE_INSTALL_PREFIX=your_install_path \</span><br><span class="line">    -D CMAKE_TOOLCHAIN_FILE=<span class="variable">${ANDROID_NDK}</span>/build/cmake/android.toolchain.cmake \</span><br><span class="line">    -D CMAKE_BUILD_TYPE=Debug \</span><br><span class="line">    -D ANDROID_NDK=<span class="variable">${ANDROID_NDK}</span> \</span><br><span class="line">    -D ANDROID_PLATFORM=android-28 \</span><br><span class="line">    -D ANDROID_STL=c++_static \</span><br><span class="line">    -D ANDROID_PIE=ON \</span><br><span class="line">    ..</span><br><span class="line">cmake --build . --config Debug --target install -- -j6</span><br></pre></td></tr></tbody></table>
+
+UVCCamera
+
+> library and sample to access to UVC web camera on non-rooted Android device  
+> Copyright (c) 2014-2017 saki [t\_saki@serenegiant.com](mailto:t_saki@serenegiant.com)
+
+## [](#Android-官方推出的-ExternalCamera "Android 官方推出的 ExternalCamera")Android 官方推出的 ExternalCamera
+
+随着 Android P 版本升级，新增了 `External USB Cameras` 这个功能，默认情况该功能是关闭的，一些 HAL 组件不会编译到 ROM 中，需要打开更新 ROM 才行。另外该功能还依赖于 `android.hardware.usb.host` 以及 Linux kernel 打开 `UVC` 驱动支持。
+
+该实现 HAL 会启动一个 `hotplug` 线程，监视 `/dev/video*` 设备节点增删情况，透过 HAL 回调函数通知 `CameraProviderManager` 更新 camera 设备列表。因为是 Google 原生支持，所以对上层 App Framework 来说，调用方式不需要变，依然调用 `Android Camera2 API`，只是看到的 cameraId 是类似 `/dev/video2` 之类的编号（内置相机是0，1，2 … 纯数字编号）
+
+详细实操过程可以参考这篇文章：
+
+[Android 外接 USB 摄像头](https://www.xbwee.space/2020/11/12/Android-External-USB-Cameras/ "Android 外接 USB 摄像头")
+
+## [](#camera-v4l2-实现 "camera.v4l2 实现")camera.v4l2 实现
+
+该库也是基于 `V4L2` 的 `Camera HALv3` 实现，原本是 Google 开发出来给树莓派系统使用的。所以从 Android AOSP 代码库里面可以找到这份源代码，但是只有 HAL 实现，没有接入 Android Framework，也就是 cameraserver 是调用不到的。如果有树莓派源代码的话倒是可以参考看看，不过估计也是基于这个初阶版本改过甚至是采用了全新的实现。
+
+该库在 Android 系统里也是默认关闭的，需要打开才会编到 ROM 里，代码实现上解耦了 camera interface 与 V2L2 wrapper 部分，所以理论上可以把 V4L2 实现替换成其它也是 ok 的。
+
+详细介绍可以参考这篇文章：
+
+[V4L2 Camera HALv3 介绍](https://www.xbwee.space/2020/10/25/V4L2-Camera-HALv3/ "V4L2 Camera HALv3 介绍")
+
+## [](#usbcamera-HAL "usbcamera HAL")usbcamera HAL
+
+Google 早期提供的一个示例代码，是空实现。略过。
+
+代码位置：  
+[`hardware/libhardware/modules/usbcamera`](https://android.googlesource.com/platform/hardware/libhardware/+/refs/heads/master/modules/usbcamera/)
+
+## [](#参考资料 "参考资料")参考资料
+
+> `libuvc`  
+> [https://github.com/saki4510t/UVCCamera](https://github.com/saki4510t/UVCCamera)  
+> [https://github.com/libuvc/libuvc](https://github.com/libuvc/libuvc)  
+> [https://github.com/libusb/libusb](https://github.com/libusb/libusb)  
+> [https://ken.tossell.net/libuvc/doc/](https://ken.tossell.net/libuvc/doc/)  
+> [https://libusb.info/](https://libusb.info/)
+
+> `external usb camera`  
+> [https://source.android.com/devices/camera/external-usb-cameras](https://source.android.com/devices/camera/external-usb-cameras)  
+> [https://groups.google.com/g/android-platform/c/Qx1P0I17uzs?pli=1](https://groups.google.com/g/android-platform/c/Qx1P0I17uzs?pli=1)
+
+> `V4L2 Camera Hal`  
+> [https://android.googlesource.com/platform/hardware/libhardware/+/master/modules/camera/3\_4/README.md](https://android.googlesource.com/platform/hardware/libhardware/+/master/modules/camera/3_4/README.md)
