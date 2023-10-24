@@ -1,3 +1,35 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        repositories {
+            maven {
+                url "https://maven.aliyun.com/repository/public"
+            }
+            maven {
+                url "https://maven.aliyun.com/repository/google"
+            }
+            maven {
+                url "http://10.49.2.59/fiks/maven/raw/master"
+                allowInsecureProtocol = true
+            }
+            google()
+            mavenCentral()
+            maven { url "https://jitpack.io" }
+            maven {
+                url 'http://4thline.org/m2'
+                allowInsecureProtocol = true
+            }
+        }
+    }
+}
 rootProject.name = "android_v4l2_camera"
 include ':sample'
 include ':sdk_v4l2_camera'
+
