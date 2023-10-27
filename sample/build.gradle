@@ -1,7 +1,4 @@
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-}
+apply plugin: rootProject.ext.plugins.application
 
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
@@ -83,6 +80,12 @@ android {
         enabled = true
     }
 
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 dependencies {

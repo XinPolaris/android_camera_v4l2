@@ -1,8 +1,4 @@
-plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
-    id 'maven-publish'
-}
+apply plugin: rootProject.ext.plugins.library
 
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
@@ -57,21 +53,4 @@ dependencies {
     testImplementation rootProject.ext.dependencies.testJunit
     androidTestImplementation rootProject.ext.dependencies.testExt
     androidTestImplementation rootProject.ext.dependencies.testEspresso
-}
-
-apply from: '../maventool/maven.gradle'
-
-afterEvaluate {
-    ext.initMaven(new File(projectDir, "../../maven"))
-
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                groupId = 'com.fotile.fiks'
-                artifactId = 'v4l2-camera'
-                version = '1.0.0-01'
-                from components.release
-            }
-        }
-    }
 }
