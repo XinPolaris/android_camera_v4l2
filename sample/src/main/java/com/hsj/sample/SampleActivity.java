@@ -3,6 +3,8 @@ package com.hsj.sample;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -58,7 +60,17 @@ public class SampleActivity extends Activity {
             public void onClick(View view) {
                 startActivity(new Intent(SampleActivity.this, GLShowImageActivity.class));
             }
+
         });
+        MediaCodecList list = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
+        MediaCodecInfo[] supportCodes = list.getCodecInfos();
+        for (MediaCodecInfo codecInfo : supportCodes) {
+            String[] types = codecInfo.getSupportedTypes();
+            for (String type : types) {
+                Log.i("MediaCodecList", "name->" + codecInfo.getName() + ", type->" + type);
+            }
+        }
+
     }
 
     @SuppressLint("SetTextI18n")
