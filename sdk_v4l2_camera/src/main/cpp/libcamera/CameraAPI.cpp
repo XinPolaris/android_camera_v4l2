@@ -362,6 +362,8 @@ ActionInfo CameraAPI::setFrameSize(int width, int height, int frame_format) {
                 return ACTION_ERROR_DECODER;
             } else if (PIXEL_FORMAT_NV12 == decoder->getPixelFormat()) {
                 pixelBytes = width * height * 3 / 2;
+            } else if (PIXEL_FORMAT_I420 == decoder->getPixelFormat()) {
+                pixelBytes = width * height * 3 / 2;
             } else {
                 pixelBytes = width * height * 2;
             }
@@ -373,7 +375,7 @@ ActionInfo CameraAPI::setFrameSize(int width, int height, int frame_format) {
         parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         parm.parm.capture.timeperframe.numerator = 1;
         if (frame_format == FRAME_FORMAT_MJPEG) {
-            parm.parm.capture.timeperframe.denominator = 30;
+            parm.parm.capture.timeperframe.denominator = 20; //帧率 = denominator / numerator
         } else {
             parm.parm.capture.timeperframe.denominator = 10;
         }

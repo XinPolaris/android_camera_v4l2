@@ -16,6 +16,7 @@ extern "C" {
 //======================================DecoderHw.cpp=============================================//
 
 #include <media/NdkMediaCodec.h>
+//#define MIME_TYPE "video/mjpeg"
 #define MIME_TYPE "video/mjpeg"
 #define TIME_OUT_US 3000
 
@@ -47,10 +48,13 @@ public:
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_WIDTH, width);
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_HEIGHT, height);
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_FRAME_RATE, 30);
-            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_COLOR_FORMAT, 21);
-            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1);
+//            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_COLOR_FORMAT, 21);
+            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_COLOR_FORMAT, 19);//i420
+            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1);//关键帧间隔时间，单位秒
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_BIT_RATE, width * height);
-            if (AMEDIA_OK == AMediaCodec_configure(mediaCodec, mediaFormat, NULL, NULL, 0)) {
+            media_status_t configureRet = AMediaCodec_configure(mediaCodec, mediaFormat, NULL, NULL, 0);
+            LOGI(TAG, "Hardware: AMediaCodec_configure ret->%d", configureRet);
+            if (AMEDIA_OK == configureRet) {
                 ret = AMediaCodec_start(mediaCodec);
             } else {
                 AMediaCodec_delete(mediaCodec);
@@ -59,6 +63,7 @@ public:
             }
             AMediaFormat_delete(mediaFormat);
         }
+        LOGI(TAG, "Hardware: init ret->%d", ret);
         return ret;
     }
 
@@ -168,7 +173,8 @@ DecoderFactory::~DecoderFactory() {
 PixelFormat DecoderFactory::getPixelFormat() {
     switch (type) {
         case DECODE_HW:
-            return PIXEL_FORMAT_NV12;
+//            return PIXEL_FORMAT_NV12;
+            return PIXEL_FORMAT_I420;
         case DECODE_SW:
             return PIXEL_FORMAT_YUV422;
         case DECODE_UNKNOWN:

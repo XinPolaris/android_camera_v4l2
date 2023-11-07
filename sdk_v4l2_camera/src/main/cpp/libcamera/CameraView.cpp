@@ -52,9 +52,13 @@ CameraView::CameraView(int pixelWidth, int pixelHeight,
         pixelHeight(pixelHeight),
         pixelFormat(pixelFormat),
         stride_width(pixelWidth * 2) {
+    LOGI(TAG, "PixelFormat-> %d", pixelFormat);
     if (pixelFormat == PIXEL_FORMAT_NV12) {
         start_uv = pixelWidth * pixelHeight;
-    } else if (pixelFormat == PIXEL_FORMAT_YUV422) {
+    }  else if (pixelFormat == PIXEL_FORMAT_I420) {
+        start_u = pixelWidth * pixelHeight;
+        start_v = pixelWidth * pixelHeight + pixelWidth * pixelHeight / 4;
+    }  else if (pixelFormat == PIXEL_FORMAT_YUV422) {
         stride_uv = pixelWidth / 2;
         start_u = pixelWidth * pixelHeight;
         start_v = start_u * 3 / 2;
@@ -80,6 +84,9 @@ void CameraView::render(uint8_t *data) {
     switch (pixelFormat) {
         case PIXEL_FORMAT_NV12:
             renderNV12(data);
+            break;
+        case PIXEL_FORMAT_I420:
+            renderI420(data);
             break;
         case PIXEL_FORMAT_YUV422:
             renderYUV422(data);
@@ -134,6 +141,7 @@ void CameraView::destroy() {
 
 //NV12:10ms
 void CameraView::renderNV12(const uint8_t *data) {
+    LOGI(TAG, "renderNV12");
     ANativeWindow_Buffer buffer;
     if (LIKELY(0 == ANativeWindow_lock(window, &buffer, nullptr))) {
         auto *dest = (uint8_t *) buffer.bits;
@@ -145,8 +153,23 @@ void CameraView::renderNV12(const uint8_t *data) {
     }
 }
 
+void CameraView::renderI420(const uint8_t *data) {
+    LOGI(TAG, "renderI420");
+    ANativeWindow_Buffer buffer;
+    if (LIKELY(0 == ANativeWindow_lock(window, &buffer, nullptr))) {
+        auto *dest = (uint8_t *) buffer.bits;
+        libyuv::I420ToABGR(data, buffer.width,
+                            data + start_u, buffer.width / 2,
+                            data + start_v, buffer.width / 2,
+                            dest, buffer.stride * 4,
+                            buffer.width, buffer.height);
+        ANativeWindow_unlockAndPost(window);
+    }
+}
+
 //YUV422:10ms (YUV)
 void CameraView::renderYUV422(const uint8_t *data) {
+    LOGI(TAG, "renderYUV422");
     ANativeWindow_Buffer buffer;
     if (LIKELY(0 == ANativeWindow_lock(window, &buffer, nullptr))) {
         auto *dest = (uint8_t *) buffer.bits;

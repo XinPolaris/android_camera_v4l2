@@ -27,6 +27,7 @@ private:
     size_t frameSize;
     ANativeWindow *window;
     void renderNV12(const uint8_t *data);
+    void renderI420(const uint8_t *data);
     void renderYUV422(const uint8_t *data);
     void renderYUYV(const uint8_t *data);
     void renderDepth(const uint8_t *data);

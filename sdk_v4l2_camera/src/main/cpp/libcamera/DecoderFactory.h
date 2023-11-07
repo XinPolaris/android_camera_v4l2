@@ -22,6 +22,7 @@ typedef enum PixelFormat {
     PIXEL_FORMAT_YUV422 = 2, //yuv
     PIXEL_FORMAT_YUYV   = 3, //yuyv
     PIXEL_FORMAT_DEPTH  = 4, //uint16
+    PIXEL_FORMAT_I420  = 5, //uint16
     PIXEL_FORMAT_ERROR  = 0,
 } PixelFormatEnum;
 
