@@ -1,13 +1,13 @@
 apply plugin: rootProject.ext.plugins.library
 
 android {
-    compileSdkVersion rootProject.ext.android.compileSdkVersion
-    buildToolsVersion rootProject.ext.android.buildToolsVersion
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
     defaultConfig {
-        minSdkVersion rootProject.ext.android.minSdkVersion
-        targetSdkVersion rootProject.ext.android.targetSdkVersion
-        versionCode rootProject.ext.android.versionCode
-        versionName rootProject.ext.android.versionName
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode Integer.parseInt(aarBuildTime())
+        versionName "1.0.0"
 
         testInstrumentationRunner rootProject.ext.dependencies.testInstrumentationRunner
         externalNativeBuild {
@@ -50,7 +50,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation rootProject.ext.dependencies.testJunit
-    androidTestImplementation rootProject.ext.dependencies.testExt
-    androidTestImplementation rootProject.ext.dependencies.testEspresso
+}
+
+
+static def aarBuildTime() {
+    return new Date().format("yyMMddHH", TimeZone.getTimeZone("GMT+08:00")).toString()
 }
