@@ -114,6 +114,8 @@ void* CameraAPI::loopThread(void *args) {
 //uint64_t time0 = 0;
 //uint64_t time1 = 0;
 
+uint64_t lastFrameTime = 0;
+
 void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
     fd_set fds;
     struct timeval tv;
@@ -137,19 +139,22 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
         } else if (camera->frameFormat == FRAME_FORMAT_MJPEG) {
             //LOGI(TAG, "mjpeg interval time = %ld", timeMs() - time1);
             //time1 = timeMs();
+            //控制帧率20fps
+            if (timeMs() - lastFrameTime > 45) {
+                lastFrameTime = timeMs();
+                //capture image
+                captureImage(env, camera->buffers[buffer.index].start, buffer.bytesused);
 
-            //capture image
-            captureImage(env, camera->buffers[buffer.index].start, buffer.bytesused);
+                //MJPEG->NV12/YUV422
+                uint8_t *data = camera->decoder->convert2YUV(camera->buffers[buffer.index].start, buffer.bytesused);
+                //LOGI(TAG, "decodeTime=%lld", timeMs() - time1)
 
-            //MJPEG->NV12/YUV422
-            uint8_t *data = camera->decoder->convert2YUV(camera->buffers[buffer.index].start, buffer.bytesused);
-            //LOGI(TAG, "decodeTime=%lld", timeMs() - time1)
+                //Render->RGBA
+                renderFrame(data);
 
-            //Render->RGBA
-            renderFrame(data);
-
-            //Data->Java
-            sendFrame(env, data);
+                //Data->Java
+                sendFrame(env, data);
+            }
         } else {
             //LOGI(TAG, "yuyv interval time = %lld", timeMs() - time0)
             //time0 = timeMs();

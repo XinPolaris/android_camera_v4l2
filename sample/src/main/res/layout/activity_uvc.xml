@@ -22,6 +22,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/debugInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:textColor="#00FF00"
+            app:layout_constraintBottom_toBottomOf="@+id/cameraView"
+            app:layout_constraintStart_toStartOf="@+id/cameraView"
+            tools:text="480x520 fps: 30" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
@@ -56,16 +66,36 @@
         android:textColor="@android:color/white" />
 
     <TextView
-        android:id="@+id/debugInfo"
+        android:id="@+id/saveYUV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
+        android:layout_below="@+id/btnSize"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
-        android:textColor="#00FF00"
-        tools:text="fps: 30" />
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:minWidth="150dp"
+        android:padding="10dp"
+        android:text="保存20帧"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/renderMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/saveYUV"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:minWidth="150dp"
+        android:padding="10dp"
+        android:text="渲染模式"
+        android:textColor="@android:color/white" />
 
     <ImageView
         android:id="@+id/ivCapture"

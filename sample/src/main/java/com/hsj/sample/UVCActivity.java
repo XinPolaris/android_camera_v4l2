@@ -27,8 +27,10 @@ import com.hsj.camera.V4L2Camera;
 import com.hsj.sample.databinding.ActivityUvcBinding;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -51,6 +53,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     DebugTool debugTool;
     private int[][] supportFrameSize;
     private static int saveFrameSize = 1280 * 720;
+    private static int saveRenderType = 0;
     private int[] curFrameSize;
 
     @Override
@@ -60,7 +63,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         binding = ActivityUvcBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
         binding.btnSize.setOnClickListener(v -> showCameraSizeChoiceDialog());
-        this.render = binding.cameraView.getRender(CameraView.COMMON);
+        this.render = binding.cameraView.getRender(saveRenderType);
         this.render.setSurfaceCallback(this);
         binding.cameraView.surfaceCallback = new CameraView.SurfaceCallback() {
             @Override
@@ -105,6 +108,31 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
             public void onClick(View v) {
                 binding.ivCapture.setVisibility(View.GONE);
                 binding.ivCloseCapture.setVisibility(View.GONE);
+            }
+        });
+        binding.saveYUV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fileName = getYUVFilePath();
+                saveYUV = true;
+            }
+        });
+        binding.renderMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String[] items = new String[]{"COMMON","BEAUTY","DEPTH"};
+                AlertDialog.Builder ad = new AlertDialog.Builder(UVCActivity.this);
+                ad.setTitle("RenderType");
+                ad.setSingleChoiceItems(items, saveRenderType, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        saveRenderType = which;
+                    }
+                });
+                ad.setPositiveButton(R.string.btn_confirm, (dialog, which) -> {
+                    finish();
+                });
+                ad.show();
             }
         });
     }
@@ -222,13 +250,76 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         }
     }
 
+    boolean saveYUV = false;
+    private SaveYUVThread saveYUVThread;
+    int count = 0;
+    String fileName = getYUVFilePath();
     private final IFrameCallback frameCallback = new IFrameCallback() {
 
         @Override
         public void onFrame(ByteBuffer data) {
             debugTool.onDataCallback(data, 0, curFrameSize[0], curFrameSize[1]);
+            if (saveYUV) {
+                count++;
+                if (count < 20) {
+                    if (saveYUVThread == null) {
+                        saveYUVThread = new SaveYUVThread();
+                        saveYUVThread.start();
+                    }
+                    saveYUVThread.queue.offer(data);
+                } else {
+                    saveYUV = false;
+                    if (saveYUVThread != null) {
+                        saveYUVThread.exitLoop();
+                    }
+                    saveYUVThread = null;
+                    count = 0;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showToast("写入完成");
+                        }
+                    });
+                }
+            }
         }
     };
+
+    class SaveYUVThread extends Thread {
+        private final LinkedBlockingQueue<ByteBuffer> queue = new LinkedBlockingQueue<>();
+        private boolean exitLoop = false;
+        @Override
+        public void run() {
+            super.run();
+            while (!exitLoop) {
+                while (queue.peek() != null) {
+                    ByteBuffer buffer = queue.poll();
+                    try {
+                        File file = new File(fileName);
+                        if (!file.exists()) {
+                            file.createNewFile();
+                        }
+                        FileOutputStream fe = new FileOutputStream(file, true);
+                        byte[] arr = new byte[buffer.remaining()];
+                        buffer.get(arr);
+                        fe.write(arr);
+                        fe.flush();
+                        fe.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        public void exitLoop() {
+            exitLoop = true;
+        }
+    }
+
+    private String getYUVFilePath() {
+        return "/sdcard/" + System.currentTimeMillis() + "_1280x720.yuv";
+    }
 
     private void stop() {
         if (this.camera != null) {

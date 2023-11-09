@@ -17,8 +17,8 @@ extern "C" {
 
 #include <media/NdkMediaCodec.h>
 //#define MIME_TYPE "video/mjpeg"
-#define MIME_TYPE "video/mjpeg"
-#define TIME_OUT_US 3000
+#define MIME_TYPE "video/jpeg"
+#define TIME_OUT_US 0
 
 class DecoderHw : public IDecoder {
 private:
@@ -47,7 +47,7 @@ public:
             AMediaFormat_setString(mediaFormat, AMEDIAFORMAT_KEY_MIME, MIME_TYPE);
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_WIDTH, width);
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_HEIGHT, height);
-            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_FRAME_RATE, 30);
+            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_FRAME_RATE, 20);
 //            AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_COLOR_FORMAT, 21);
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_COLOR_FORMAT, 19);//i420
             AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1);//关键帧间隔时间，单位秒
@@ -71,6 +71,7 @@ public:
     uint8_t* convert2YUV(void* raw_buffer, size_t raw_size) override {
         size_t out_size;
         //3.1 get input buffer index on buffers
+        //延迟TIMEUS等待拿到空的 input buffer下标，单位为us。一1表示一直等待，直到拿到数据，0表示立即返回
         ssize_t in_buffer_id = AMediaCodec_dequeueInputBuffer(mediaCodec, TIME_OUT_US);
         if (in_buffer_id >= 0) {
             //3.2 get input buffer by input buffer index

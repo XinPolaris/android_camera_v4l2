@@ -141,7 +141,6 @@ void CameraView::destroy() {
 
 //NV12:10ms
 void CameraView::renderNV12(const uint8_t *data) {
-    LOGI(TAG, "renderNV12");
     ANativeWindow_Buffer buffer;
     if (LIKELY(0 == ANativeWindow_lock(window, &buffer, nullptr))) {
         auto *dest = (uint8_t *) buffer.bits;
@@ -154,7 +153,6 @@ void CameraView::renderNV12(const uint8_t *data) {
 }
 
 void CameraView::renderI420(const uint8_t *data) {
-    LOGI(TAG, "renderI420");
     ANativeWindow_Buffer buffer;
     if (LIKELY(0 == ANativeWindow_lock(window, &buffer, nullptr))) {
         auto *dest = (uint8_t *) buffer.bits;
@@ -169,7 +167,6 @@ void CameraView::renderI420(const uint8_t *data) {
 
 //YUV422:10ms (YUV)
 void CameraView::renderYUV422(const uint8_t *data) {
-    LOGI(TAG, "renderYUV422");
     ANativeWindow_Buffer buffer;
     if (LIKELY(0 == ANativeWindow_lock(window, &buffer, nullptr))) {
         auto *dest = (uint8_t *) buffer.bits;
