@@ -3,6 +3,7 @@ package com.hsj.camera;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -38,11 +39,9 @@ public final class CameraView extends GLSurfaceView implements GLSurfaceView.Ren
     }
 
     public IRender getRender(int renderType) {
+        Log.i(TAG, "getRender: " + renderType);
         if (render == null) {
             switch (renderType) {
-                case COMMON:
-                    render = new RenderCommon(this);
-                    break;
                 case BEAUTY:
                     render = new RenderBeauty(this);
                     break;
@@ -50,7 +49,8 @@ public final class CameraView extends GLSurfaceView implements GLSurfaceView.Ren
                     render = new RenderDepth(this);
                     break;
                 default:
-                    throw new IllegalArgumentException("Not support render type: " + renderType);
+                    render = new RenderCommon(this);
+                    break;
             }
         }
         return render;
