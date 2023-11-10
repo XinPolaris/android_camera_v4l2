@@ -54,7 +54,6 @@ public class SampleActivity extends Activity {
                 startActivity(new Intent(SampleActivity.this, UVCActivity.class));
             }
         });
-        binding.textView3.setVisibility(View.VISIBLE);
         binding.textView3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

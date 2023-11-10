@@ -16,8 +16,8 @@ extern "C" {
 //======================================DecoderHw.cpp=============================================//
 
 #include <media/NdkMediaCodec.h>
-#define MIME_TYPE "video/mjpeg"
-//#define MIME_TYPE "video/jpeg"
+//#define MIME_TYPE "video/mjpeg"
+#define MIME_TYPE "video/jpeg"
 #define TIME_OUT_US 0
 
 class DecoderHw : public IDecoder {
