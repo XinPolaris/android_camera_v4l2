@@ -40,8 +40,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
         android:background="@color/colorPrimary"
         android:gravity="center"
         android:minWidth="150dp"
@@ -56,8 +54,6 @@
         android:layout_below="@+id/btnBack"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
         android:background="@color/colorPrimary"
         android:gravity="center"
         android:minWidth="150dp"
@@ -66,35 +62,45 @@
         android:textColor="@android:color/white" />
 
     <TextView
-        android:id="@+id/saveYUV"
+        android:id="@+id/renderMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/btnSize"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
-        android:background="@color/colorPrimary"
-        android:gravity="center"
-        android:minWidth="150dp"
-        android:padding="10dp"
-        android:text="保存20帧"
-        android:textColor="@android:color/white" />
-
-    <TextView
-        android:id="@+id/renderMode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/saveYUV"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
         android:background="@color/colorPrimary"
         android:gravity="center"
         android:minWidth="150dp"
         android:padding="10dp"
         android:text="渲染模式"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/saveYUV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/renderMode"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:minWidth="150dp"
+        android:padding="10dp"
+        android:text="保存20帧YUV"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/btnCaptureLoop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/renderMode"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:minWidth="150dp"
+        android:padding="10dp"
+        android:text="循环截图"
         android:textColor="@android:color/white" />
 
     <ImageView

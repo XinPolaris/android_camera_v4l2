@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -120,7 +122,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         binding.renderMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String[] items = new String[]{"COMMON","BEAUTY","DEPTH"};
+                String[] items = new String[]{"COMMON", "BEAUTY", "DEPTH"};
                 AlertDialog.Builder ad = new AlertDialog.Builder(UVCActivity.this);
                 ad.setTitle("RenderType");
                 ad.setSingleChoiceItems(items, saveRenderType, new DialogInterface.OnClickListener() {
@@ -133,6 +135,12 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
                     finish();
                 });
                 ad.show();
+            }
+        });
+        binding.btnCaptureLoop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                captureLoop();
             }
         });
     }
@@ -190,9 +198,39 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
         return super.onOptionsItemSelected(item);
     }
 
+    private Timer captureLoopTimer;
+    private int captureLoop = 0;
+    private void captureLoop() {
+        if (captureLoopTimer != null) {
+            captureLoopTimer.cancel();
+            showToast("循环截图已停止");
+        } else {
+            showToast("循环截图已启动");
+            captureLoop = 0;
+            captureLoopTimer = new Timer();
+            captureLoopTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (camera != null) {
+                        captureLoop++;
+                        File file = new File(getExternalFilesDir(null) + "/captureLoop.jpg");
+                        file.delete();
+                        Log.i(TAG, captureLoop + " onImageCapture start: " + file.getAbsolutePath());
+                        camera.captureImage(file.getAbsolutePath(), new IImageCaptureCallback() {
+                            @Override
+                            public void onImageCapture(String filePath) {
+                                Log.i(TAG, captureLoop + " onImageCapture end: " + filePath);
+                            }
+                        });
+                    }
+                }
+            }, 0, 100);
+        }
+    }
+
     private void captureImage() {
         if (camera != null) {
-            String path = new StringBuilder().append(getExternalFilesDir(null)).append("/").append(System.currentTimeMillis()).append(".jpg").toString();
+            String path = getExternalFilesDir(null) + "/" + System.currentTimeMillis() + ".jpg";
             camera.captureImage(path, new IImageCaptureCallback() {
                 @Override
                 public void onImageCapture(String filePath) {
@@ -288,6 +326,7 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
     class SaveYUVThread extends Thread {
         private final LinkedBlockingQueue<ByteBuffer> queue = new LinkedBlockingQueue<>();
         private boolean exitLoop = false;
+
         @Override
         public void run() {
             super.run();
