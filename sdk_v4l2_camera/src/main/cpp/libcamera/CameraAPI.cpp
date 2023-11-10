@@ -204,7 +204,9 @@ void CameraAPI::captureImage(JNIEnv *env, void *raw_buffer, size_t raw_size) {
             fwrite(raw_buffer, raw_size, 1, file); // 写入文件
             fclose(file); // 写入完成，关闭文件
         }
-        env->CallVoidMethod(captureImageCallback, captureImageCallback_onCapture, env->NewStringUTF(captureImageFilePath));
+        jstring path = env->NewStringUTF(captureImageFilePath);
+        env->CallVoidMethod(captureImageCallback, captureImageCallback_onCapture, path);
+        env->DeleteLocalRef(path);
         env->ExceptionClear();
 
         //release
