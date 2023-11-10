@@ -154,6 +154,9 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
 
                 //Data->Java
                 sendFrame(env, data);
+
+                //释放YUV数据buffer
+                camera->decoder->release_buffer();
             }
         } else {
             //LOGI(TAG, "yuyv interval time = %lld", timeMs() - time0)

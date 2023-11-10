@@ -33,6 +33,7 @@ public:
     virtual ~IDecoder() = default;
     virtual int init(uint16_t width, uint16_t height) = 0;
     virtual uint8_t* convert2YUV(void* raw_buffer, size_t raw_size) = 0;
+    virtual void release_buffer() = 0;
 };
 
 class DecoderFactory {
@@ -45,6 +46,7 @@ public:
     int init(uint16_t frameW, uint16_t frameH);
     PixelFormat getPixelFormat();
     uint8_t* convert2YUV(void* raw_buffer, size_t raw_size);
+    void release_buffer();
 };
 
 #ifdef __cplusplus

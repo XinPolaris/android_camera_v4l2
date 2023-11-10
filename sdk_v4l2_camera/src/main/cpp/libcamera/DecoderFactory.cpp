@@ -16,13 +16,15 @@ extern "C" {
 //======================================DecoderHw.cpp=============================================//
 
 #include <media/NdkMediaCodec.h>
-//#define MIME_TYPE "video/mjpeg"
-#define MIME_TYPE "video/jpeg"
+#define MIME_TYPE "video/mjpeg"
+//#define MIME_TYPE "video/jpeg"
 #define TIME_OUT_US 0
 
 class DecoderHw : public IDecoder {
 private:
     AMediaCodec* mediaCodec;
+    ssize_t out_buffer_id;
+    AMediaCodecBufferInfo info;
 public:
     DecoderHw():mediaCodec(NULL){}
 
@@ -86,13 +88,12 @@ public:
 
         //3.5 get out buffer index of decode by output queue buffers
         uint8_t* out = NULL;
-        AMediaCodecBufferInfo info;
-        ssize_t out_buffer_id = AMediaCodec_dequeueOutputBuffer(mediaCodec, &info, 0);
+        out_buffer_id = AMediaCodec_dequeueOutputBuffer(mediaCodec, &info, 0);
         if (out_buffer_id >= 0) {
             //3.6 get output buffer by output buffer index, nv12
             out = AMediaCodec_getOutputBuffer(mediaCodec, out_buffer_id, &out_size);
             //3.7 release output buffer by output buffer index
-            AMediaCodec_releaseOutputBuffer(mediaCodec, out_buffer_id, info.size != 0);
+//            AMediaCodec_releaseOutputBuffer(mediaCodec, out_buffer_id, info.size != 0);
         } else if (out_buffer_id == AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED) {
             LOGW(TAG, "Hardware: media info output buffers changed");
         } else if (out_buffer_id == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) {
@@ -107,6 +108,13 @@ public:
         }
         //3.8 return nv12
         return out;
+    }
+
+    void release_buffer() override {
+        if (out_buffer_id >= 0) {
+            //3.7 release output buffer by output buffer index
+            AMediaCodec_releaseOutputBuffer(mediaCodec, out_buffer_id, info.size != 0);
+        }
     }
 
 };
@@ -157,6 +165,10 @@ public:
         //5 decompress: to YUV422 22ms (flag = 0、TJFLAG_FASTDCT)
         tjDecompressToYUV2(handle, raw, raw_size, out_buffer, _width, 4, _height, flags);
         return out_buffer;
+    }
+
+    void release_buffer() override {
+
     }
 
 };
@@ -213,6 +225,14 @@ uint8_t* DecoderFactory::convert2YUV(void *raw_buffer, size_t raw_size) {
     } else {
         LOGW(TAG, "convert2YUV: decoder not init");
         return NULL;
+    }
+}
+
+void DecoderFactory::release_buffer() {
+    if ( LIKELY(decoder)) {
+        decoder->release_buffer();
+    } else {
+        LOGW(TAG, "convert2YUV: decoder not init");
     }
 }
 
