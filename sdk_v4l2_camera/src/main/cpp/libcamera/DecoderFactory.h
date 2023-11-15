@@ -37,7 +37,7 @@ public:
 };
 
 class DecoderFactory {
-private:
+public:
     DecodeType type;
     IDecoder* decoder;
 public:

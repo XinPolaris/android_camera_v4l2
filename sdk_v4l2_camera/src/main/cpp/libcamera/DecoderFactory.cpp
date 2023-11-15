@@ -72,18 +72,20 @@ public:
     //3ms
     uint8_t* convert2YUV(void* raw_buffer, size_t raw_size) override {
         size_t out_size;
-        //3.1 get input buffer index on buffers
-        //延迟TIMEUS等待拿到空的 input buffer下标，单位为us。一1表示一直等待，直到拿到数据，0表示立即返回
-        ssize_t in_buffer_id = AMediaCodec_dequeueInputBuffer(mediaCodec, TIME_OUT_US);
-        if (in_buffer_id >= 0) {
-            //3.2 get input buffer by input buffer index
-            uint8_t *in_buffer = AMediaCodec_getInputBuffer(mediaCodec, in_buffer_id, &out_size);
-            //3.3 put raw buffer to input buffer
-            memcpy(in_buffer, raw_buffer, raw_size);
-            //3.4 submit input buffer to queue buffers of input
-            AMediaCodec_queueInputBuffer(mediaCodec, in_buffer_id, 0, raw_size, timeUs(), 0);
-        } else {
-            LOGW(TAG, "Hardware: No available input buffer");
+        if (raw_buffer != nullptr) {
+            //3.1 get input buffer index on buffers
+            //延迟TIMEUS等待拿到空的 input buffer下标，单位为us。一1表示一直等待，直到拿到数据，0表示立即返回
+            ssize_t in_buffer_id = AMediaCodec_dequeueInputBuffer(mediaCodec, TIME_OUT_US);
+            if (in_buffer_id >= 0) {
+                //3.2 get input buffer by input buffer index
+                uint8_t *in_buffer = AMediaCodec_getInputBuffer(mediaCodec, in_buffer_id, &out_size);
+                //3.3 put raw buffer to input buffer
+                memcpy(in_buffer, raw_buffer, raw_size);
+                //3.4 submit input buffer to queue buffers of input
+                AMediaCodec_queueInputBuffer(mediaCodec, in_buffer_id, 0, raw_size, timeUs(), 0);
+            } else {
+                LOGW(TAG, "Hardware: No available input buffer");
+            }
         }
 
         //3.5 get out buffer index of decode by output queue buffers

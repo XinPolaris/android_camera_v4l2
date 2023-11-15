@@ -124,13 +124,27 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
     buffer.memory = V4L2_MEMORY_MMAP;
     const int fd_count = camera->fd + 1;
     while (STATUS_RUN == camera->getStatus()) {
-        tv.tv_sec = 1;
-        tv.tv_usec = 0;
+        tv.tv_sec = 0;
+        tv.tv_usec = 10 * 1000;
         FD_ZERO (&fds);
         FD_SET (camera->fd, &fds);
         int ret = select(fd_count, &fds, NULL, NULL, &tv);
         if (0 >= ret) {//非阻塞，0超时，-1错误
             LOGE(TAG, "Loop frame failed: %d %s", ret, strerror(errno));
+            if (camera->decoder->type == DECODE_HW) {
+                //MJPEG->NV12/YUV422
+                uint8_t *data = camera->decoder->convert2YUV(nullptr, 0);
+                //LOGI(TAG, "decodeTime=%lld", timeMs() - time1)
+
+                //Render->RGBA
+                renderFrame(data);
+
+                //Data->Java
+                sendFrame(env, data);
+
+                //释放YUV数据buffer
+                camera->decoder->release_buffer();
+            }
             continue;
         } else if (0 > ioctl(camera->fd, VIDIOC_DQBUF, &buffer)) {
             //TODO video/dev* disconnect, implement auto connect
@@ -140,7 +154,7 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
             //LOGI(TAG, "mjpeg interval time = %ld", timeMs() - time1);
             //time1 = timeMs();
             //控制帧率20fps
-            if (timeMs() - lastFrameTime > 45) {
+            if (timeMs() - lastFrameTime > 35) {
                 lastFrameTime = timeMs();
                 //capture image
                 captureImage(env, camera->buffers[buffer.index].start, buffer.bytesused);
