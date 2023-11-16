@@ -130,7 +130,7 @@ void CameraAPI::loopFrame(JNIEnv *env, CameraAPI *camera) {
         FD_SET (camera->fd, &fds);
         int ret = select(fd_count, &fds, NULL, NULL, &tv);
         if (0 >= ret) {//非阻塞，0超时，-1错误
-            LOGE(TAG, "Loop frame failed: %d %s", ret, strerror(errno));
+//            LOGE(TAG, "Loop frame failed: %d %s", ret, strerror(errno));
             if (camera->decoder->type == DECODE_HW) {
                 //MJPEG->NV12/YUV422
                 uint8_t *data = camera->decoder->convert2YUV(nullptr, 0);
@@ -458,21 +458,17 @@ ActionInfo CameraAPI::setFrameCallback(JNIEnv *env, jobject frame_callback) {
 ActionInfo CameraAPI::captureImage(JNIEnv *env, jstring filePath, jobject capture_callback) {
     if (STATUS_RUN == getStatus()) {
         if (captureImageCallback) {
-            LOGD(TAG, "captureImage: 1");
             env->DeleteGlobalRef(captureImageCallback);
         }
         if (capture_callback) {
-            LOGD(TAG, "captureImage: 2");
             jclass clazz = env->GetObjectClass(capture_callback);
             if (LIKELY(clazz)) {
-                LOGD(TAG, "captureImage: 3");
                 captureImageCallback = capture_callback;
                 captureImageCallback_onCapture = env->GetMethodID(clazz, "onImageCapture", "(Ljava/lang/String;)V");
                 captureImageFilePath = env->GetStringUTFChars(filePath, 0);
             }
             env->ExceptionClear();
             if (!captureImageCallback_onCapture) {
-                LOGD(TAG, "captureImage: 4");
                 env->DeleteGlobalRef(captureImageCallback);
                 captureImageCallback = nullptr;
                 captureImageCallback_onCapture = nullptr;
