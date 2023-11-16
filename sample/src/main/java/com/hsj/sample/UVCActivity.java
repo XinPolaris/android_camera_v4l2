@@ -10,6 +10,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -238,14 +244,60 @@ public final class UVCActivity extends AppCompatActivity implements ISurfaceCall
                         @Override
                         public void run() {
                             binding.ivCapture.setImageURI(Uri.fromFile(new File(filePath)));
-                            binding.ivCapture.setVisibility(View.VISIBLE);
-                            binding.ivCloseCapture.setVisibility(View.VISIBLE);
+//                            binding.ivCapture.setVisibility(View.VISIBLE);
+//                            binding.ivCloseCapture.setVisibility(View.VISIBLE);
                             Toast.makeText(UVCActivity.this, "已拍照：" + filePath, Toast.LENGTH_SHORT).show();
+
+                            captureAnimate();
                         }
                     });
                 }
             });
         }
+    }
+
+    private void captureAnimate() {
+        binding.ivCapture.clearAnimation();
+
+        AnimationSet animationSet = new AnimationSet(false);
+
+        AlphaAnimation alphaAnimation1 = new AlphaAnimation(0f, 1f);
+        alphaAnimation1.setDuration(300);
+        alphaAnimation1.setFillAfter(true);
+        float scale = binding.viewDismiss.getWidth() / (float)binding.ivCapture.getWidth();
+        ScaleAnimation scaleAnimation = new ScaleAnimation(
+                1.0f,
+                scale,
+                1.0f,
+                scale,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF,
+                0.5f
+        );
+        TranslateAnimation translateAnimation = new TranslateAnimation(
+                0f,
+                (binding.viewDismiss.getLeft() + binding.viewDismiss.getWidth()/2f) -(binding.ivCapture.getLeft() + binding.ivCapture.getWidth()/2f),
+                0f,
+                (binding.viewDismiss.getTop() + binding.viewDismiss.getHeight()/2f) - (binding.ivCapture.getTop() + binding.ivCapture.getHeight()/2f)
+        );
+        AnimationSet animationSet2 =new AnimationSet(false);
+        animationSet2.setInterpolator(new DecelerateInterpolator());
+        animationSet2.addAnimation(scaleAnimation);
+        animationSet2.addAnimation(translateAnimation);
+        animationSet2.setDuration(2000);
+        animationSet2.setFillAfter(true);
+        animationSet2.setStartOffset(alphaAnimation1.getDuration());
+
+        AlphaAnimation alphaAnimation2 = new  AlphaAnimation(1f, 0f);
+        alphaAnimation2.setStartOffset(animationSet2.getDuration() * 2);
+        alphaAnimation2.setDuration(200);
+        alphaAnimation2.setFillAfter(true);
+
+        animationSet.addAnimation(alphaAnimation1);
+        animationSet.addAnimation(animationSet2);
+        animationSet.addAnimation(alphaAnimation2);
+        binding.ivCapture.startAnimation(animationSet);
     }
 
 //===========================================Camera=================================================

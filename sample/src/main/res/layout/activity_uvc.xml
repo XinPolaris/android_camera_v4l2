@@ -32,6 +32,24 @@
             app:layout_constraintBottom_toBottomOf="@+id/cameraView"
             app:layout_constraintStart_toStartOf="@+id/cameraView"
             tools:text="480x520 fps: 30" />
+
+        <View
+            android:id="@+id/viewDismiss"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="40dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivCapture"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/cameraView"
+            app:layout_constraintEnd_toEndOf="@+id/cameraView"
+            app:layout_constraintStart_toStartOf="@+id/cameraView"
+            app:layout_constraintTop_toTopOf="@+id/cameraView" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
@@ -102,15 +120,6 @@
         android:padding="10dp"
         android:text="循环截图"
         android:textColor="@android:color/white" />
-
-    <ImageView
-        android:id="@+id/ivCapture"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/black"
-        android:visibility="gone"
-        tools:src="@drawable/thelittleprince"
-        tools:visibility="gone" />
 
     <ImageView
         android:id="@+id/ivCloseCapture"
