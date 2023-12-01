@@ -483,7 +483,7 @@ ActionInfo CameraAPI::captureImage(JNIEnv *env, jstring filePath, jobject captur
 }
 
 ActionInfo CameraAPI::setPreview(ANativeWindow *window) {
-    if (STATUS_INIT == getStatus()) {
+    if (STATUS_INIT == getStatus() || STATUS_RUN == getStatus()) {
         if (preview != NULL) {
             preview->destroy();
             SAFE_DELETE(preview);

@@ -104,7 +104,7 @@ public:
             LOGI(TAG, "AMediaFormat: %s", AMediaFormat_toString(format));
             AMediaFormat_delete(format);
         } else if (out_buffer_id == AMEDIACODEC_INFO_TRY_AGAIN_LATER) {
-            LOGW(TAG, "Hardware: media info try again later");
+//            LOGW(TAG, "Hardware: media info try again later");
         } else {
             LOGW(TAG, "Hardware: Unexpected info code: %zd", out_buffer_id);
         }
